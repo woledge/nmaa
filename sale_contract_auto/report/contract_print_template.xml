@@ -45,7 +45,7 @@
                     <strong>رقم قومي / </strong>
                     <span t-field="doc.second_party_id_card"/>
                 </p>
-                <span>( طرف تانى - الشريك )</span>
+                <span>( طرف ثانى - الشريك )</span>
 
 
             </div>

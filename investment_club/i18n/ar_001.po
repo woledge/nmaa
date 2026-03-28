@@ -537,7 +537,7 @@ msgstr "الفاتورة المبدئية موجودة بالفعل!"
 #: model:ir.model.fields,field_description:investment_club.field_investment_actual_return__subscription_id
 #: model:ir.ui.menu,name:investment_club.menu_investment_root
 msgid "Investment"
-msgstr "استثمار"
+msgstr "ادارة الاستثمارات"
 
 #. module: investment_club
 #. odoo-python
@@ -1095,13 +1095,13 @@ msgstr "المسؤول"
 #. odoo-python
 #: code:addons/investment_club/models/actual_return.py:0
 msgid "Return Payment - %s - %s"
-msgstr "عوائد شهريه- %s - %s"
+msgstr "رد دفع - %s - %s"
 
 #. module: investment_club
 #: model:ir.actions.act_window,name:investment_club.action_actual_return
 #: model:ir.ui.menu,name:investment_club.menu_actual_return
 msgid "Return Payments"
-msgstr "عوائد شهريه"
+msgstr "رد دفع"
 
 #. module: investment_club
 #: model_terms:ir.ui.view,arch_db:investment_club.view_investment_subscription_form

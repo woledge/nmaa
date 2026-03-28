@@ -236,7 +236,7 @@ msgstr "عناوين العقود"
 #: model:ir.ui.menu,name:sale_contract_auto.menu_contracts
 #: model_terms:ir.ui.view,arch_db:sale_contract_auto.view_sale_contract_tree
 msgid "Contracts"
-msgstr "العقود"
+msgstr "ادارة العقود"
 
 #. module: sale_contract_auto
 #: model:ir.model.fields,field_description:sale_contract_auto.field_contract_template__create_uid
@@ -537,7 +537,7 @@ msgstr ""
 #. module: sale_contract_auto
 #: model:ir.actions.act_window,name:sale_contract_auto.action_sale_contracts
 msgid "Sale Contracts"
-msgstr ""
+msgstr "العقود"
 
 #. module: sale_contract_auto
 #: model:ir.model,name:sale_contract_auto.model_sale_order
