@@ -28,8 +28,8 @@
         5. All Investors - كل المستثمرين
         6. Return Payments - سجل دفع العوائد
     """,
-    'author': 'Al-Namaa Investment',
-    'website': '',
+    'author': 'Woledge',
+    'website': 'https://woledge.com',
     'depends': ['base', 'mail', 'account', 'analytic'],
     'data': [
         'security/security.xml',

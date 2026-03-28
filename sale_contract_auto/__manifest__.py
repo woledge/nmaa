@@ -26,7 +26,6 @@ This module allows you to:
         'account',
         'portal',
         'mail',
-        'website',
     ],
 
     'data': [
