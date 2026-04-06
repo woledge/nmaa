@@ -1,6 +1,6 @@
 # investment_club/models/membership.py
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from datetime import timedelta
 
 
@@ -8,10 +8,19 @@ class InvestmentMembership(models.Model):
     _name = 'investment.membership'
     _description = 'Investment Membership'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _rec_name = 'membership_number'
+    _rec_name = 'customer_membership_number'
 
+    # ===== رقم العضوية الفريد للعميل =====
+    customer_membership_number = fields.Char(
+        string='Customer Membership Number',
+        required=True,
+        copy=False,
+        index=True,
+        help='رقم العضوية الفريد للعميل - لا يتكرر'
+    )
+    
     membership_number = fields.Char(
-        string='Membership Number',
+        string='Internal Reference',
         readonly=True,
         copy=False,
         default='New'
@@ -31,16 +40,13 @@ class InvestmentMembership(models.Model):
         tracking=True
     )
     
-    # ===== بيانات العضوية (المنتج) =====
     membership_product_id = fields.Many2one(
         'product.product',
         string='Membership Product',
         domain="[('type', '=', 'service')]",
-        required=True,
-        help='المنتج المستخدم لأول مرة (سعر العضوية الأولى)'
+        required=True
     )
     
-    # سعر العضوية الأولى (من المنتج)
     initial_membership_fee = fields.Float(
         string='Initial Membership Fee',
         related='membership_product_id.lst_price',
@@ -48,19 +54,15 @@ class InvestmentMembership(models.Model):
         store=True
     )
     
-    # ===== بيانات الاشتراك السنوي (مستقل) =====
     subscription_product_id = fields.Many2one(
         'product.product',
         string='Subscription Product',
-        domain="[('type', '=', 'service')]",
-        help='المنتج المستخدم للتجديد السنوي (اختياري - ممكن يكون نفس المنتج أو منتج مختلف)'
+        domain="[('type', '=', 'service')]"
     )
     
-    # سعر الاشتراك السنوي (مستقل تماماً)
     annual_subscription_fee = fields.Float(
         string='Annual Subscription Fee',
-        required=True,
-        help='سعر الاشتراك السنوي (ممكن يكون مختلف عن سعر العضوية الأولى)'
+        required=True
     )
     
     subscription_period = fields.Selection([
@@ -83,7 +85,6 @@ class InvestmentMembership(models.Model):
     
     auto_renew = fields.Boolean(string='Auto Renew', default=True)
     
-    # ===== الفواتير =====
     initial_invoice_id = fields.Many2one(
         'account.move',
         string='Initial Invoice',
@@ -105,7 +106,6 @@ class InvestmentMembership(models.Model):
         store=True
     )
     
-    # ===== سجل التجديدات =====
     renewal_ids = fields.One2many(
         'membership.renewal',
         'membership_id',
@@ -132,7 +132,6 @@ class InvestmentMembership(models.Model):
         ('not_due', 'Not Due Yet')
     ], string='Renewal Status', compute='_compute_renewal_status', store=True)
     
-    # الحالة
     state = fields.Selection([
         ('draft', 'Draft'),
         ('initial_invoiced', 'Initial Invoiced'),
@@ -141,7 +140,6 @@ class InvestmentMembership(models.Model):
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', tracking=True)
     
-    # الاستثمارات
     investment_ids = fields.One2many(
         'investment.subscription',
         'membership_id',
@@ -168,28 +166,50 @@ class InvestmentMembership(models.Model):
     
     notes = fields.Text(string='Notes')
 
+    _sql_constraints = [
+        ('customer_membership_number_unique', 'unique(customer_membership_number)', 
+         'رقم العضوية هذا مستخدم بالفعل! الرجاء استخدام رقم آخر.')
+    ]
+
+    @api.constrains('customer_membership_number')
+    def _check_customer_membership_number(self):
+        for record in self:
+            if not record.customer_membership_number:
+                raise ValidationError(_('رقم العضوية مطلوب!'))
+            duplicate = self.search([
+                ('customer_membership_number', '=', record.customer_membership_number),
+                ('id', '!=', record.id)
+            ])
+            if duplicate:
+                raise ValidationError(_('رقم العضوية %s مستخدم بالفعل مع العميل %s') % 
+                    (record.customer_membership_number, duplicate[0].partner_id.name))
+
     @api.onchange('subscription_product_id')
     def _onchange_subscription_product(self):
-        """اقتراح سعر الاشتراك من المنتج (لكن المستخدم يقدر يغيره)"""
         if self.subscription_product_id and not self.annual_subscription_fee:
             self.annual_subscription_fee = self.subscription_product_id.lst_price
 
     @api.depends('membership_date', 'subscription_period', 'renewal_ids')
     def _compute_dates(self):
+        """حساب تاريخ الانتهاء - نهاية المدة (يوم قبل بداية الفترة الجديدة)"""
         for membership in self:
             if membership.membership_date:
                 if membership.renewal_ids:
                     last_renewal = membership.renewal_ids.sorted('renewal_date', reverse=True)[0]
-                    base_date = last_renewal.new_expiry_date
+                    # نبدأ من اليوم اللي بعد الـ expiry date القديم
+                    base_date = last_renewal.new_expiry_date + timedelta(days=1)
                 else:
                     base_date = membership.membership_date
                 
                 if membership.subscription_period == 'monthly':
-                    membership.expiry_date = base_date + timedelta(days=30)
+                    # 30 يوم - 1 يوم = 29 يوم (نهاية اليوم 30)
+                    membership.expiry_date = base_date + timedelta(days=29)
                 elif membership.subscription_period == 'quarterly':
-                    membership.expiry_date = base_date + timedelta(days=90)
-                else:
-                    membership.expiry_date = base_date + timedelta(days=365)
+                    # 90 يوم - 1 يوم = 89 يوم
+                    membership.expiry_date = base_date + timedelta(days=89)
+                else:  # yearly
+                    # 365 يوم - 1 يوم = 364 يوم
+                    membership.expiry_date = base_date + timedelta(days=364)
             else:
                 membership.expiry_date = False
 
@@ -227,9 +247,7 @@ class InvestmentMembership(models.Model):
                 vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership') or 'New'
         return super(InvestmentMembership, self).create(vals_list)
 
-    # ===== فاتورة العضوية الأولى =====
     def action_create_initial_invoice(self):
-        """فاتورة العضوية الأولى (سعر المنتج)"""
         self.ensure_one()
         
         if not self.membership_product_id:
@@ -265,15 +283,12 @@ class InvestmentMembership(models.Model):
             'view_mode': 'form',
         }
 
-    # ===== فاتورة التجديد =====
     def action_create_renewal_invoice(self):
-        """فاتورة التجديد (سعر الاشتراك السنوي المستقل)"""
         self.ensure_one()
         
         if self.annual_subscription_fee <= 0:
             raise UserError(_('Please set annual subscription fee!'))
         
-        # إنشاء سجل التجديد
         renewal_vals = {
             'membership_id': self.id,
             'renewal_date': fields.Date.today(),
@@ -284,7 +299,6 @@ class InvestmentMembership(models.Model):
         }
         renewal = self.env['membership.renewal'].create(renewal_vals)
         
-        # استخدام منتج التجديد لو موجود، أو منتج العضوية
         product = self.subscription_product_id or self.membership_product_id
         
         invoice_vals = {
@@ -293,9 +307,9 @@ class InvestmentMembership(models.Model):
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': product.id,
-                'name': _('Annual Subscription - %s - %s') % (self.club_id.name, self.membership_number),
+                'name': _('Annual Subscription - %s - %s') % (self.club_id.name, self.customer_membership_number),
                 'quantity': 1,
-                'price_unit': self.annual_subscription_fee,  # السعر المستقل
+                'price_unit': self.annual_subscription_fee,
             })],
         }
         
@@ -304,7 +318,7 @@ class InvestmentMembership(models.Model):
         
         self.write({
             'current_invoice_id': invoice.id,
-            'state': 'initial_invoiced'  # نرجع لنفس الحالة عشان يدفع
+            'state': 'initial_invoiced'
         })
         
         return {
@@ -316,11 +330,9 @@ class InvestmentMembership(models.Model):
         }
 
     def action_confirm_payment(self):
-        """تأكيد الدفع"""
         self.ensure_one()
         if self.payment_state == 'paid':
             self.write({'state': 'active'})
-            # تحديث سجل التجديد الأخير لو موجود
             last_renewal = self.renewal_ids.sorted('renewal_date', reverse=True)[:1]
             if last_renewal:
                 last_renewal.write({'state': 'paid'})
@@ -328,25 +340,26 @@ class InvestmentMembership(models.Model):
             raise UserError(_('Invoice is not paid yet!'))
 
     def _calculate_new_expiry(self):
-        """حساب تاريخ الانتهاء الجديد"""
+        """حساب تاريخ الانتهاء الجديد - نهاية المدة (يوم قبل بداية الفترة الجديدة)"""
         if not self.expiry_date:
             return fields.Date.today()
         
+        # نبدأ من اليوم اللي بعد الـ expiry date
+        new_start = self.expiry_date + timedelta(days=1)
+        
         if self.subscription_period == 'monthly':
-            return self.expiry_date + timedelta(days=30)
+            return new_start + timedelta(days=29)  # 30 يوم - 1
         elif self.subscription_period == 'quarterly':
-            return self.expiry_date + timedelta(days=90)
-        else:
-            return self.expiry_date + timedelta(days=365)
+            return new_start + timedelta(days=89)  # 90 يوم - 1
+        else:  # yearly
+            return new_start + timedelta(days=364)  # 365 يوم - 1
 
     def action_cancel(self):
-        """إلغاء العضوية"""
         if self.current_invoice_id and self.current_invoice_id.payment_state != 'paid':
             self.current_invoice_id.button_cancel()
         self.write({'state': 'cancelled'})
 
     def action_create_investment(self):
-        """فتح شاشة استثمار جديد"""
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
@@ -356,6 +369,7 @@ class InvestmentMembership(models.Model):
             'context': {
                 'default_membership_id': self.id,
                 'default_partner_id': self.partner_id.id,
+                'default_customer_membership_number': self.customer_membership_number,
             },
             'target': 'current',
         }
@@ -363,6 +377,6 @@ class InvestmentMembership(models.Model):
     def name_get(self):
         result = []
         for record in self:
-            name = f"{record.membership_number} - {record.partner_id.name}"
+            name = f"[{record.customer_membership_number}] {record.partner_id.name}"
             result.append((record.id, name))
         return result

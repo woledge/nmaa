@@ -6,7 +6,8 @@
         <field name="model">investment.actual.return</field>
         <field name="arch" type="xml">
             <list decoration-success="state == 'paid'" decoration-muted="state == 'cancelled'">
-                <field name="name"/>
+                <field name="customer_membership_number"/>
+                <field name="name" optional="hide"/>
                 <field name="period_name"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
@@ -41,8 +42,11 @@
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" readonly="1"/>
+                            <field name="customer_membership_number" readonly="1"/>
                         </h1>
+                        <h3 class="text-muted">
+                            Ref: <field name="name" readonly="1"/>
+                        </h3>
                     </div>
                     
                     <group>
@@ -92,6 +96,7 @@
         <field name="model">investment.actual.return</field>
         <field name="arch" type="xml">
             <search>
+                <field name="customer_membership_number"/>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>

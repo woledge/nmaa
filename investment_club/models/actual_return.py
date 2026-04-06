@@ -7,8 +7,17 @@ class InvestmentActualReturn(models.Model):
     _name = 'investment.actual.return'
     _description = 'Actual Return Payment'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _order = 'date_from desc'  # غيرت من 'date desc'
+    _order = 'date_from desc'
 
+    # ===== رقم العضوية للعميل (من Subscription) =====
+    customer_membership_number = fields.Char(
+        string='Customer Membership Number',
+        related='subscription_id.customer_membership_number',
+        store=True,
+        readonly=True,
+        index=True
+    )
+    
     name = fields.Char(
         string='Reference',
         readonly=True,
@@ -123,7 +132,6 @@ class InvestmentActualReturn(models.Model):
         if not self.payment_journal_id:
             raise UserError(_('Please select payment journal!'))
         
-        # إنشاء payment outbound (دفع للعميل)
         payment_vals = {
             'payment_type': 'outbound',
             'partner_type': 'customer',
@@ -131,7 +139,7 @@ class InvestmentActualReturn(models.Model):
             'journal_id': self.payment_journal_id.id,
             'amount': self.actual_amount,
             'date': fields.Date.today(),
-            'memo': _('Return Payment - %s - %s') % (self.period_name, self.subscription_id.name),
+            'memo': _('Return Payment - %s - %s [%s]') % (self.period_name, self.subscription_id.name, self.customer_membership_number),
         }
         
         payment = self.env['account.payment'].create(payment_vals)
@@ -151,6 +159,6 @@ class InvestmentActualReturn(models.Model):
     def name_get(self):
         result = []
         for record in self:
-            name = f"{record.name} - {record.partner_id.name} ({record.period_name})"
+            name = f"[{record.customer_membership_number}] {record.period_name} - {record.actual_amount}"
             result.append((record.id, name))
         return result

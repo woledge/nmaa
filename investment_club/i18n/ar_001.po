@@ -537,7 +537,7 @@ msgstr "الفاتورة المبدئية موجودة بالفعل!"
 #: model:ir.model.fields,field_description:investment_club.field_investment_actual_return__subscription_id
 #: model:ir.ui.menu,name:investment_club.menu_investment_root
 msgid "Investment"
-msgstr "ادارة الاستثمارات"
+msgstr "استثمار"
 
 #. module: investment_club
 #. odoo-python

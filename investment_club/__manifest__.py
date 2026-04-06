@@ -1,36 +1,29 @@
 # investment_club/__manifest__.py
 {
     'name': 'Investment Clubs Management',
-    'version': '18.0.8.0.0',
+    'version': '18.0.8.0.0', 
     'category': 'Investment',
-    'summary': 'Complete investment management system',
+    'summary': 'Complete investment management system with Customer Membership Number',
     'description': """
         Investment Clubs Management for Al-Namaa - Complete System
         
-        Modules:
-        1. Clubs - إدارة النوادي (Elite & Retail)
-        2. Projects - إدارة المشاريع مع Analytic Accounts
-        3. Memberships - العضويات (سعر أولي + اشتراك سنوي منفصل)
-        4. Investments - الاستثمارات (دفع مباشر بدون فاتورة)
-        5. Return Payments - دفع العوائد الفعلية للعملاء
+        Features:
+        1. Customer Membership Number - رقم عضوية فريد للعميل
+        2. Clubs Management - إدارة النوادي
+        3. Projects Management - إدارة المشاريع
+        4. Memberships - العضويات
+        5. Investments - الاستثمارات (تظهر برقم العضوية)
+        6. Return Payments - دفع العوائد (تظهر برقم العضوية)
         
-        Accounting:
-        - General Ledger integration
-        - Analytic Accounting per project
-        - Partner Ledger tracking
-        - Automated payment registration
-        
-        Reports:
-        1. Renewal Due - التجديدات المستحقة
-        2. Monthly Returns - العوائد المتوقعة
-        3. Investor Summary - ملخص المستثمرين
-        4. Active Investments - الاستثمارات النشطة
-        5. All Investors - كل المستثمرين
-        6. Return Payments - سجل دفع العوائد
+        Customer Membership Number:
+        - فريد (Unique) - لا يتكرر
+        - يظهر في جميع الشاشات (Membership, Investment, Returns)
+        - يستخدم في البحث والتصفية
+        - يظهر في التقارير والفواتير
     """,
-    'author': 'Woledge',
-    'website': 'https://woledge.com',
-    'depends': ['base', 'mail', 'account', 'analytic'],
+    'author': 'Al-Namaa Investment',
+    'website': '',
+    'depends': ['base', 'mail', 'account', 'analytic', 'product'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',

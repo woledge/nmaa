@@ -7,8 +7,17 @@ class InvestmentSubscription(models.Model):
     _name = 'investment.subscription'
     _description = 'Investment Subscription'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _rec_name = 'name'
+    _rec_name = 'customer_membership_number'  # غيرنا من name
 
+    # ===== رقم العضوية للعميل (من Membership) =====
+    customer_membership_number = fields.Char(
+        string='Customer Membership Number',
+        related='membership_id.customer_membership_number',
+        store=True,
+        readonly=True,
+        index=True
+    )
+    
     name = fields.Char(
         string='Reference',
         readonly=True,
@@ -157,11 +166,10 @@ class InvestmentSubscription(models.Model):
                 sub.actual_return_ids.filtered(lambda r: r.state == 'paid').mapped('actual_amount')
             )
 
-    @api.depends('actual_return_ids')  # شيلت 'actual_return_ids.date'
+    @api.depends('actual_return_ids')
     def _compute_last_return(self):
         for sub in self:
             paid_returns = sub.actual_return_ids.filtered(lambda r: r.state == 'paid')
-            # استخدم date_from بدل date
             sub.last_return_date = max(paid_returns.mapped('date_from')) if paid_returns else False
 
     @api.model_create_multi
@@ -184,7 +192,7 @@ class InvestmentSubscription(models.Model):
             'journal_id': self.payment_journal_id.id,
             'amount': self.amount,
             'date': fields.Date.today(),
-            'memo': _('Investment %s - %s') % (self.name, self.project_id.name),
+            'memo': _('Investment %s - %s [%s]') % (self.name, self.project_id.name, self.customer_membership_number),
         }
         
         payment = self.env['account.payment'].create(payment_vals)
@@ -222,6 +230,7 @@ class InvestmentSubscription(models.Model):
                 'default_subscription_id': self.id,
                 'default_expected_amount': self.expected_monthly_return,
                 'default_actual_amount': self.expected_monthly_return,
+                'default_customer_membership_number': self.customer_membership_number,
             },
             'target': 'current',
         }
@@ -237,6 +246,6 @@ class InvestmentSubscription(models.Model):
     def name_get(self):
         result = []
         for record in self:
-            name = f"{record.name} - {record.project_id.name} ({record.share_count} shares)"
+            name = f"[{record.customer_membership_number}] {record.project_id.name} ({record.share_count} shares)"
             result.append((record.id, name))
         return result

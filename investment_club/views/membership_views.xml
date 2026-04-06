@@ -5,7 +5,8 @@
         <field name="model">investment.membership</field>
         <field name="arch" type="xml">
             <list decoration-warning="renewal_status == 'due'" decoration-danger="renewal_status == 'overdue'">
-                <field name="membership_number"/>
+                <field name="customer_membership_number"/>
+                <field name="membership_number" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="club_id"/>
                 <field name="initial_membership_fee"/>
@@ -64,14 +65,18 @@
                 </div>
                 
                 <sheet>
+                    <!-- العنوان الرئيسي - Internal Ref -->
                     <div class="oe_title">
                         <h1>
                             <field name="membership_number" readonly="1"/>
                         </h1>
+                        <!-- شيلنا h2 لأن مفيش حقل name في الموديل -->
                     </div>
                     
                     <group>
                         <group string="Customer &amp; Club">
+                            <!-- كود العضوية فوق -->
+                            <field name="customer_membership_number" string="Membership Code"/>
                             <field name="partner_id"/>
                             <field name="club_id"/>
                         </group>
@@ -84,7 +89,6 @@
                         </group>
                     </group>
                     
-                    <!-- فصل الأسعار -->
                     <group string="Pricing">
                         <group string="Initial Membership (First Time)">
                             <field name="membership_product_id"/>
@@ -126,6 +130,7 @@
                         <page string="Investments">
                             <field name="investment_ids">
                                 <list>
+                                    <field name="customer_membership_number"/>
                                     <field name="name"/>
                                     <field name="project_id"/>
                                     <field name="share_count"/>
@@ -144,30 +149,37 @@
             </form>
         </field>
     </record>
-     <record id="view_investment_membership_calendar" model="ir.ui.view">
+     
+    <record id="view_investment_membership_calendar" model="ir.ui.view">
         <field name="name">investment.membership.calendar</field>
         <field name="model">investment.membership</field>
         <field name="arch" type="xml">
-
             <calendar
                 string="Membership Renewals"
                 date_start="next_renewal_date"
                 date_stop="expiry_date"
                 mode="month"
                 color="renewal_status">
-
-                <!-- عنوان الحدث -->
-                <field name="membership_number"/>
-
-                <!-- بيانات إضافية تظهر في popup -->
+                <field name="customer_membership_number"/>
                 <field name="partner_id"/>
                 <field name="club_id"/>
                 <field name="next_renewal_amount"/>
                 <field name="renewal_status"/>
                 <field name="state"/>
-
             </calendar>
+        </field>
+    </record>
 
+    <record id="view_investment_membership_search" model="ir.ui.view">
+        <field name="name">investment.membership.search</field>
+        <field name="model">investment.membership</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="customer_membership_number"/>
+                <field name="partner_id"/>
+                <field name="club_id"/>
+                <field name="membership_number"/>
+            </search>
         </field>
     </record>
 
