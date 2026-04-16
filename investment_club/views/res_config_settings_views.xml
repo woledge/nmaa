@@ -1,55 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-    <record id="res_config_settings_view_form" model="ir.ui.view">
+    
+    <record id="res_config_settings_view_form_investment" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.investment</field>
         <field name="model">res.config.settings</field>
         <field name="priority" eval="90"/>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="Investment Club" string="Investment Club" name="investment_club" logo="/base/static/description/settings.png">
+                <app data-string="Investment Club" string="Investment Club" name="investment_club">
 
-                    <!-- Membership Configuration -->
-                    <block title="Membership Configuration" name="membership_settings">
-                        <setting string="Default Membership Product" help="المنتج الافتراضي لرسوم العضوية الأولى">
-                            <field name="default_membership_product_id" class="oe_inline"/>
+                    <block title="Membership Settings">
+                        <setting string="Default Membership Product">
+                            <field name="membership_product_id"/>
                         </setting>
-                        <setting string="Default Subscription Product" help="المنتج الافتراضي للاشتراك السنوي">
-                            <field name="default_subscription_product_id" class="oe_inline"/>
+                        <setting string="Default Subscription Product">
+                            <field name="subscription_product_id"/>
                         </setting>
-                        <setting string="Default Subscription Period" help="فترة الاشتراك الافتراضية">
-                            <field name="default_subscription_period" class="oe_inline"/>
+                        <setting string="Default Subscription Period">
+                            <field name="subscription_period"/>
                         </setting>
-                        <setting string="Auto Renewal Days Before" help="عدد الأيام قبل انتهاء العضوية لإرسال إشعار التجديد">
-                            <field name="auto_renewal_days_before" class="oe_inline"/>
+                        <setting string="Auto Renewal Days Before">
+                            <field name="auto_renewal_days"/>
                         </setting>
                     </block>
 
-                    <!-- Financial Configuration -->
-                    <block title="Financial Configuration" name="financial_settings">
-                        <setting string="Default Payment Journal" help="الحساب الافتراضي لتسجيل مدفوعات الاستثمار">
-                            <field name="default_payment_journal_id" class="oe_inline"/>
+                    <block title="Financial Settings">
+                        <setting string="Default Payment Journal">
+                            <field name="payment_journal_id"/>
                         </setting>
-                        <setting string="Returns Payment Journal" help="الحساب الافتراضي لدفع العوائد للمستثمرين">
-                            <field name="return_payment_journal_id" class="oe_inline"/>
-                        </setting>
-                    </block>
-
-                    <!-- Automation Settings -->
-                    <block title="Automation Settings" name="automation_settings">
-                        <setting string="Auto Activate Projects" help="تفعيل المشاريع تلقائياً عند الإنشاء">
-                            <field name="auto_activate_projects" class="oe_inline"/>
+                        <setting string="Returns Payment Journal">
+                            <field name="return_payment_journal_id"/>
                         </setting>
                     </block>
 
-                    <!-- Notifications -->
-                    <block title="Notifications" name="notification_settings">
-                        <setting string="Renewal Notifications" help="تفعيل إشعارات التجديد التلقائية">
-                            <field name="enable_renewal_notifications" class="oe_inline"/>
+                    <block title="Project Settings">
+                        <setting string="Auto Activate Projects">
+                            <field name="auto_activate_projects"/>
                         </setting>
-                        <setting string="Payment Notifications" help="تفعيل إشعارات المدفوعات">
-                            <field name="enable_payment_notifications" class="oe_inline"/>
+                        <setting string="Default Grace Period (Months)">
+                            <field name="grace_period_months"/>
+                        </setting>
+                    </block>
+
+                    <block title="Security Settings">
+                        <setting string="Restrict Project Creation to Managers">
+                            <field name="restrict_project_creation"/>
+                        </setting>
+                        <setting string="Require Approval for Investments">
+                            <field name="require_approval_for_investment"/>
+                        </setting>
+                    </block>
+
+                    <block title="Notification Settings">
+                        <setting string="Enable Renewal Notifications">
+                            <field name="enable_renewal_notifications"/>
+                        </setting>
+                        <setting string="Enable Payment Notifications">
+                            <field name="enable_payment_notifications"/>
                         </setting>
                     </block>
 
@@ -62,8 +70,7 @@
     <menuitem id="menu_investment_configuration"
               name="Configuration"
               parent="menu_investment_root"
-              sequence="100"
-              groups="group_investment_manager"/>
+              sequence="100"/>
 
     <record id="action_investment_config_settings" model="ir.actions.act_window">
         <field name="name">Settings</field>
@@ -79,5 +86,5 @@
               parent="menu_investment_configuration"
               action="action_investment_config_settings"
               sequence="1"/>
-    </data>
+
 </odoo>
