@@ -11,13 +11,7 @@ class InvestmentActualReturn(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date_from desc'
 
-    customer_membership_number = fields.Char(
-        string='Customer Membership Number',
-        related='subscription_id.customer_membership_number',
-        store=True,
-        readonly=True,
-        index=True
-    )
+
     
     name = fields.Char(
         string='Reference',
@@ -113,16 +107,6 @@ class InvestmentActualReturn(models.Model):
         store=True
     )
 
-    @api.depends('date_from', 'date_to', 'customer_membership_number')
-    def _compute_period_name(self):
-        for rec in self:
-            if rec.date_from and rec.date_to:
-                rec.period_name = '%s - %s' % (
-                    rec.date_from.strftime('%B %Y'),
-                    rec.customer_membership_number or 'Unknown'
-                )
-            else:
-                rec.period_name = False
 
     @api.depends('subscription_id', 'date_from', 'date_to')
     def _compute_expected_amount(self):
@@ -225,7 +209,7 @@ class InvestmentActualReturn(models.Model):
             'journal_id': self.payment_journal_id.id,
             'amount': self.actual_amount,
             'date': fields.Date.today(),
-            'memo': _('Return Payment - %s - %s [%s]') % (self.period_name, self.subscription_id.name, self.customer_membership_number),
+            'memo': _('Return Payment - %s - %s [%s]') % (self.period_name, self.subscription_id.name),
         }
         
         payment = self.env['account.payment'].create(payment_vals)
@@ -244,6 +228,6 @@ class InvestmentActualReturn(models.Model):
     def name_get(self):
         result = []
         for record in self:
-            name = f"[{record.customer_membership_number}] {record.period_name} - {record.actual_amount:,.2f}"
+            name = f"{record.period_name} - {record.actual_amount:,.2f}"
             result.append((record.id, name))
         return result

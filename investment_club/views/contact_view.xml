@@ -7,9 +7,25 @@
 
             <!-- نحط الحقل بعد الاسم -->
             <xpath expr="//field[@name='vat']" position="after">
-                <field name="code"/>
+<!--                <field name="code"/>-->
             </xpath>
 
+        </field>
+    </record>
+
+
+
+
+    <record id="investor_code_account" model="ir.ui.view">
+        <field name="name">Investor code</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <group>
+                <field name="investor_code_id"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

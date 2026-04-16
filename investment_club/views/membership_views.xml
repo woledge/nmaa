@@ -5,7 +5,6 @@
         <field name="model">investment.membership</field>
         <field name="arch" type="xml">
             <list decoration-warning="renewal_status == 'due'" decoration-danger="renewal_status == 'overdue'">
-                <field name="customer_membership_number"/>
                 <field name="membership_number" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="club_id"/>
@@ -76,8 +75,8 @@
                     <group>
                         <group string="Customer &amp; Club">
                             <!-- كود العضوية فوق -->
-                            <field name="customer_membership_number" string="Membership Code"/>
                             <field name="partner_id"/>
+                            <field name="investor_code"/>
                             <field name="club_id"/>
                         </group>
                         
@@ -130,7 +129,6 @@
                         <page string="Investments">
                             <field name="investment_ids">
                                 <list>
-                                    <field name="customer_membership_number"/>
                                     <field name="name"/>
                                     <field name="project_id"/>
                                     <field name="share_count"/>
@@ -160,8 +158,8 @@
                 date_stop="expiry_date"
                 mode="month"
                 color="renewal_status">
-                <field name="customer_membership_number"/>
                 <field name="partner_id"/>
+                <field name="investor_code"/>
                 <field name="club_id"/>
                 <field name="next_renewal_amount"/>
                 <field name="renewal_status"/>
@@ -175,7 +173,6 @@
         <field name="model">investment.membership</field>
         <field name="arch" type="xml">
             <search>
-                <field name="customer_membership_number"/>
                 <field name="partner_id"/>
                 <field name="club_id"/>
                 <field name="membership_number"/>

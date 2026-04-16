@@ -8,16 +8,9 @@ class InvestmentMembership(models.Model):
     _name = 'investment.membership'
     _description = 'Investment Membership'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _rec_name = 'customer_membership_number'
 
     # ===== رقم العضوية الفريد للعميل =====
-    customer_membership_number = fields.Char(
-        string='Customer Membership Number',
-        required=True,
-        copy=False,
-        index=True,
-        help='رقم العضوية الفريد للعميل - لا يتكرر'
-    )
+
     
     membership_number = fields.Char(
         string='Internal Reference',
@@ -169,23 +162,11 @@ class InvestmentMembership(models.Model):
     
     notes = fields.Text(string='Notes')
 
-    _sql_constraints = [
-        ('customer_membership_number_unique', 'unique(customer_membership_number)', 
-         'رقم العضوية هذا مستخدم بالفعل! الرجاء استخدام رقم آخر.')
-    ]
 
-    @api.constrains('customer_membership_number')
-    def _check_customer_membership_number(self):
-        for record in self:
-            if not record.customer_membership_number:
-                raise ValidationError(_('رقم العضوية مطلوب!'))
-            duplicate = self.search([
-                ('customer_membership_number', '=', record.customer_membership_number),
-                ('id', '!=', record.id)
-            ])
-            if duplicate:
-                raise ValidationError(_('رقم العضوية %s مستخدم بالفعل مع العميل %s') % 
-                    (record.customer_membership_number, duplicate[0].partner_id.name))
+    investor_code = fields.Char(string='Investor code')
+
+
+
 
     @api.onchange('subscription_product_id')
     def _onchange_subscription_product(self):
@@ -262,15 +243,17 @@ class InvestmentMembership(models.Model):
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
+            'investor_code': self.investor_code if self.investor_code else False,
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': self.membership_product_id.id,
-                'name': _('Membership Fee - %s') % self.club_id.name,
+                'name': _('Membership Fee - %s %s') % (self.club_id.name, self.investor_code),
                 'quantity': 1,
                 'price_unit': self.initial_membership_fee,
             })],
         }
-        
+        print(self.investor_code),
+
         invoice = self.env['account.move'].create(invoice_vals)
         self.write({
             'initial_invoice_id': invoice.id,
@@ -310,7 +293,7 @@ class InvestmentMembership(models.Model):
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': product.id,
-                'name': _('Annual Subscription - %s - %s') % (self.club_id.name, self.customer_membership_number),
+                'name': _('Annual Subscription - %s - %s') % (self.club_id.name, ),
                 'quantity': 1,
                 'price_unit': self.annual_subscription_fee,
             })],
@@ -372,26 +355,71 @@ class InvestmentMembership(models.Model):
             'context': {
                 'default_membership_id': self.id,
                 'default_partner_id': self.partner_id.id,
-                'default_customer_membership_number': self.customer_membership_number,
             },
             'target': 'current',
         }
 
-    def name_get(self):
-        result = []
-        for record in self:
-            name = f"[{record.customer_membership_number}] {record.partner_id.name}"
-            result.append((record.id, name))
-        return result
+    # =============================================
+    # 1) يجيب أو ينشئ sequence للنادي
+    # =============================================
+    def _get_club_sequence(self):
+        """Get or create a dedicated sequence for this club"""
+        self.ensure_one()
+        if not self.club_id:
+            return False
 
-    # ⚠️ التصحيح: أضفت store=True عشان يتخزن في الداتابيز
-    @api.depends('customer_membership_number')
-    def _compute_customer(self):
-        for rec in self:
-            if rec.customer_membership_number:
-                partner = self.env['res.partner'].search([
-                    ('code', '=', rec.customer_membership_number)
-                ], limit=1)
-                rec.partner_id = partner
-            else:
-                rec.partner_id = False
+        club_name = self.club_id.name.replace(' ', '')
+        sequence_code = f'investor.code.{self.club_id.id}'
+
+        # هل فيه sequence لهذا النادي؟
+        sequence = self.env['ir.sequence'].sudo().search([
+            ('code', '=', sequence_code),
+        ], limit=1)
+
+        if not sequence:
+            # أول مرة → أنشئ sequence خاص بالنادي
+            sequence = self.env['ir.sequence'].sudo().create({
+                'name': f'Investor Code - {self.club_id.name}',
+                'code': sequence_code,
+                'prefix': f'INVS-{club_name}-',
+                'padding': 5,
+                'number_increment': 1,
+            })
+
+        return sequence
+
+    # =============================================
+    # 2) توليد الكود من sequence النادي
+    # =============================================
+    def _generate_investor_code(self):
+        """Generate: INVS-ElAhly-00001 (per club)"""
+        self.ensure_one()
+        sequence = self._get_club_sequence()
+        if sequence:
+            return sequence.next_by_id()
+        return False
+
+    # =============================================
+    # 3) عند الحفظ
+    # =============================================
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('investor_code'):
+                record = self.new(vals)
+                code = record._generate_investor_code()
+                if code:
+                    vals['investor_code'] = code
+        return super().create(vals_list)
+
+    # =============================================
+    # 4) لما المستخدم يغير النادي
+    # =============================================
+    def write(self, vals):
+        if 'club_id' in vals:
+            for record in self:
+                record.club_id = self.env['res.partner'].browse(vals['club_id'])
+                code = record._generate_investor_code()
+                if code:
+                    vals['investor_code'] = code
+        return super().write(vals)

@@ -9,15 +9,8 @@ class InvestmentSubscription(models.Model):
     _name = 'investment.subscription'
     _description = 'Investment Subscription'
     _inherit = ['mail.thread', 'mail.activity.mixin']
-    _rec_name = 'customer_membership_number'
 
-    customer_membership_number = fields.Char(
-        string='Customer Membership Number',
-        related='membership_id.customer_membership_number',
-        store=True,
-        readonly=True,
-        index=True
-    )
+
     
     name = fields.Char(
         string='Reference',
@@ -339,7 +332,7 @@ class InvestmentSubscription(models.Model):
             'journal_id': self.payment_journal_id.id,
             'amount': self.amount,
             'date': fields.Date.today(),
-            'memo': _('Investment %s - %s [%s]') % (self.name, self.project_id.name, self.customer_membership_number),
+            'memo': _('Investment %s - %s ') % (self.name, self.project_id.name),
         }
         
         payment = self.env['account.payment'].create(payment_vals)
@@ -429,7 +422,7 @@ class InvestmentSubscription(models.Model):
         # ===== إنشاء اسم الفترة =====
         period_name = '%s / %s' % (
             next_date_from.strftime('%B %Y'),  # April 2026
-            self.customer_membership_number or 'Unknown'
+            self.partner_id or 'Unknown'
         )
         
         # ===== إنشاء العائد مباشرة =====
@@ -472,6 +465,6 @@ class InvestmentSubscription(models.Model):
     def name_get(self):
         result = []
         for record in self:
-            name = f"[{record.customer_membership_number}] {record.project_id.name} ({record.share_count} shares)"
+            name = f"{record.project_id.name} ({record.share_count} shares)"
             result.append((record.id, name))
         return result

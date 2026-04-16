@@ -6,7 +6,6 @@
         <field name="model">investment.subscription</field>
         <field name="arch" type="xml">
             <list decoration-success="grace_period_passed == True" decoration-muted="grace_period_passed == False">
-                <field name="customer_membership_number"/>
                 <field name="name" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
@@ -73,9 +72,7 @@
                 
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="customer_membership_number" readonly="1"/>
-                        </h1>
+
                         <h3 class="text-muted">
                             Ref: <field name="name" readonly="1"/>
                         </h3>
@@ -127,7 +124,6 @@
                         <page string="Actual Returns History">
                             <field name="actual_return_ids">
                                 <list>
-                                    <field name="customer_membership_number"/>
                                     <field name="period_name"/>
                                     <field name="date_from"/>
                                     <field name="date_to"/>
@@ -153,7 +149,6 @@
         <field name="model">investment.subscription</field>
         <field name="arch" type="xml">
             <search>
-                <field name="customer_membership_number"/>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>

@@ -26,7 +26,6 @@ class InvestorSummaryReport(models.AbstractModel):
 
             report_data.append({
                 'membership': mem.membership_number,
-                'customer_membership_number': mem.customer_membership_number,
                 'partner': mem.partner_id.name,
                 'phone': mem.partner_id.phone or '',
                 'club': mem.club_id.name,

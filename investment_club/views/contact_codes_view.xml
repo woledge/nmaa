@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="contact_codes_adding" model="ir.ui.view">
+        <field name="name">contact codes </field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Codes">
+
+                    <group>
+                        <group>
+                            <field name="employee_code_check"/>
+                            <field name="employee_code"
+                            />
+                        </group>
+
+                        <group>
+                            <field name="customer_code_check"/>
+                            <field name="customer_code"
+                            />
+                        </group>
+
+                        <group>
+                            <field name="vendor_code_check"/>
+                            <field name="vendor_code"
+                            />
+                        </group>
+
+                        <group>
+                            <field name="investor_code_check"/>
+                            <field name="investor_code"
+                            />
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
+
+
+        </field>
+    </record>
+
+
+       <record id="sequence_employee_code" model="ir.sequence">
+        <field name="name">Employee Code Sequence</field>
+        <field name="code">employee.code</field>
+        <field name="prefix">EMP-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- Customer Code Sequence -->
+    <record id="sequence_customer_code" model="ir.sequence">
+        <field name="name">Customer Code Sequence</field>
+        <field name="code">customer.code</field>
+        <field name="prefix">CUS-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- Vendor Code Sequence -->
+    <record id="sequence_vendor_code" model="ir.sequence">
+        <field name="name">Vendor Code Sequence</field>
+        <field name="code">vendor.code</field>
+        <field name="prefix">VEN-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+    </record>
+
+
+
+</odoo>

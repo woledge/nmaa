@@ -43,7 +43,6 @@ class CrmLead(models.Model):
             'target': 'current',
             'context': {
                 'default_partner_id': self.partner_id.id,
-                'default_customer_membership_number': self.partner_id.code or '',
                 'default_club_id': self.club_id.id if self.club_id else False,
             },
         }

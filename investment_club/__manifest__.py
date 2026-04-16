@@ -35,6 +35,7 @@
         'views/investment_subscription_views.xml',
         'views/actual_return_views.xml',
         'views/crm_lead_views.xml',
+        'views/contact_codes_view.xml',
         # ✅ إصلاح: إضافة views ناقصة كانت
         # 'views/dashboard_views.xml',
         'views/res_config_settings_views.xml',
