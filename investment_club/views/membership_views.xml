@@ -64,6 +64,11 @@
                 </div>
                 
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_open_invoice" class="oe_stat__button" icon="fa-file-text-o">
+                            <field name="invoice_count" widget="statinfo" string="Invoice"/>
+                        </button>
+                    </div>
                     <!-- العنوان الرئيسي - Internal Ref -->
                     <div class="oe_title">
                         <h1>
@@ -176,6 +181,7 @@
                 <field name="partner_id"/>
                 <field name="club_id"/>
                 <field name="membership_number"/>
+                <field name="investor_code"/>
             </search>
         </field>
     </record>
@@ -186,5 +192,5 @@
         <field name="view_mode">list,form,calendar</field>
     </record>
 
-    <menuitem id="menu_investment_membership" name="Memberships" parent="menu_investment_root" action="action_investment_membership" sequence="3"/>
+
 </odoo>

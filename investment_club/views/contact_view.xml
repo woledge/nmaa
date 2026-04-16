@@ -23,7 +23,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
                 <group>
-                <field name="investor_code_id"/>
+                <field name="investor_code"/>
                 </group>
             </xpath>
         </field>

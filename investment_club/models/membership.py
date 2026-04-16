@@ -163,7 +163,10 @@ class InvestmentMembership(models.Model):
     notes = fields.Text(string='Notes')
 
 
-    investor_code = fields.Char(string='Investor code')
+    investor_code = fields.Char(string='Investor code',store=True)
+
+    invoice_id = fields.Many2one('account.move', string='invoice')
+    invoice_count = fields.Integer(compute='_compute_invoice_count')
 
 
 
@@ -233,42 +236,67 @@ class InvestmentMembership(models.Model):
 
     def action_create_initial_invoice(self):
         self.ensure_one()
-        
+
         if not self.membership_product_id:
             raise UserError(_('Please select membership product!'))
-        
+
         if self.initial_invoice_id:
             raise UserError(_('Initial invoice already exists!'))
-        
+
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
-            'investor_code': self.investor_code if self.investor_code else False,
+            'investor_code_id': self.investor_code or False,
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': self.membership_product_id.id,
-                'name': _('Membership Fee - %s %s') % (self.club_id.name, self.investor_code),
+                'name': _('Membership Fee - %s %s') % (self.club_id.name, self.investor_code or ''),
                 'quantity': 1,
                 'price_unit': self.initial_membership_fee,
             })],
         }
-        print(self.investor_code),
 
         invoice = self.env['account.move'].create(invoice_vals)
+
+        # ✅ الربط + تغيير الحالة
         self.write({
             'initial_invoice_id': invoice.id,
             'current_invoice_id': invoice.id,
             'state': 'initial_invoiced'
         })
-        
+
+        invoice.action_post()
+
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Initial Invoice',
+            'name': 'Invoice',
             'res_model': 'account.move',
-            'res_id': invoice.id,
             'view_mode': 'form',
+            'res_id': invoice.id,
         }
 
+    def action_open_invoice(self):
+        self.ensure_one()
+
+        invoice = self.current_invoice_id or self.initial_invoice_id
+
+        if not invoice:
+            raise UserError("No invoice linked to this record.")
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Invoice',
+            'res_model': 'account.move',
+            'view_mode': 'form',
+            'res_id': invoice.id,
+        }
+
+    @api.depends('initial_invoice_id', 'current_invoice_id')
+    def _compute_invoice_count(self):
+        for rec in self:
+            rec.invoice_count = sum([
+                bool(rec.initial_invoice_id),
+            ])
     def action_create_renewal_invoice(self):
         self.ensure_one()
         

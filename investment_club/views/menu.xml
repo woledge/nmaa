@@ -1,0 +1,16 @@
+
+<odoo>
+
+
+    <menuitem id="menu_investment_root" name="Investment" sequence="10" web_icon="investment_club,static/desciption/images.png"/>
+    <menuitem id="menu_investment_club" name="Clubs" parent="menu_investment_root" action="action_investment_club" sequence="1"/>
+    <menuitem id="menu_actual_return" name="Return Payments" parent="menu_investment_root" action="action_actual_return" sequence="6"/>
+    <menuitem id="menu_investment_project" name="Projects" parent="menu_investment_root" action="action_investment_project" sequence="2"/>
+    <menuitem id="menu_investment_subscription" name="Investments" parent="menu_investment_root" action="action_investment_subscription" sequence="4"/>
+    <menuitem id="menu_investment_membership" name="Memberships" parent="menu_investment_root" action="action_investment_membership" sequence="3"/>
+    <menuitem id="menu_investment_configuration" name="Configuration" parent="menu_investment_root" sequence="100"/>
+    <menuitem id="menu_investment_settings" name="Settings" parent="menu_investment_configuration" action="action_investment_config_settings" sequence="1"/>
+
+
+
+</odoo>

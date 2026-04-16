@@ -73,6 +73,5 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_investment_root" name="Investment" sequence="10" web_icon="investment_club,static/desciption/images.png"/>
-    <menuitem id="menu_investment_club" name="Clubs" parent="menu_investment_root" action="action_investment_club" sequence="1"/>
+
 </odoo>

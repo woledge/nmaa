@@ -118,5 +118,4 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_actual_return" name="Return Payments" parent="menu_investment_root" action="action_actual_return" sequence="6"/>
 </odoo>

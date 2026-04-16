@@ -9,3 +9,4 @@ from . import contact
 from . import crm_lead
 from . import res_config_settings
 from . import contact_codes
+from . import account_move

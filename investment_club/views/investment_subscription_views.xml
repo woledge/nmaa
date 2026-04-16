@@ -175,5 +175,4 @@
     </record>
 
     <!-- Menu -->
-    <menuitem id="menu_investment_subscription" name="Investments" parent="menu_investment_root" action="action_investment_subscription" sequence="4"/>
 </odoo>

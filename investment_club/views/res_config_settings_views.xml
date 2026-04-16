@@ -67,10 +67,7 @@
     </record>
 
     <!-- Configuration Menu -->
-    <menuitem id="menu_investment_configuration"
-              name="Configuration"
-              parent="menu_investment_root"
-              sequence="100"/>
+
 
     <record id="action_investment_config_settings" model="ir.actions.act_window">
         <field name="name">Settings</field>
@@ -81,10 +78,5 @@
         <field name="context">{'module': 'investment_club'}</field>
     </record>
 
-    <menuitem id="menu_investment_settings"
-              name="Settings"
-              parent="menu_investment_configuration"
-              action="action_investment_config_settings"
-              sequence="1"/>
 
 </odoo>
