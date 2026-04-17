@@ -230,9 +230,9 @@ class InvestmentMembership(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('membership_number', 'New') == 'New':
-                vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership') or 'New'
-        return super(InvestmentMembership, self).create(vals_list)
+            if not vals.get('membership_number') or vals.get('membership_number') == 'New':
+                vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
+        return super().create(vals_list)
 
     def action_create_initial_invoice(self):
         self.ensure_one()
@@ -246,7 +246,7 @@ class InvestmentMembership(models.Model):
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
-            'investor_code_id': self.investor_code or False,
+            'investor_code_id': self.id or False,
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': self.membership_product_id.id,
@@ -426,20 +426,6 @@ class InvestmentMembership(models.Model):
         if sequence:
             return sequence.next_by_id()
         return False
-
-    # =============================================
-    # 3) عند الحفظ
-    # =============================================
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            if not vals.get('investor_code'):
-                record = self.new(vals)
-                code = record._generate_investor_code()
-                if code:
-                    vals['investor_code'] = code
-        return super().create(vals_list)
-
     # =============================================
     # 4) لما المستخدم يغير النادي
     # =============================================
