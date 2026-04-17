@@ -42,31 +42,6 @@
     </record>
 
 
-       <record id="sequence_employee_code" model="ir.sequence">
-        <field name="name">Employee Code Sequence</field>
-        <field name="code">employee.code</field>
-        <field name="prefix">EMP-</field>
-        <field name="padding">5</field>
-        <field name="number_increment">1</field>
-    </record>
-
-    <!-- Customer Code Sequence -->
-    <record id="sequence_customer_code" model="ir.sequence">
-        <field name="name">Customer Code Sequence</field>
-        <field name="code">customer.code</field>
-        <field name="prefix">CUS-</field>
-        <field name="padding">5</field>
-        <field name="number_increment">1</field>
-    </record>
-
-    <!-- Vendor Code Sequence -->
-    <record id="sequence_vendor_code" model="ir.sequence">
-        <field name="name">Vendor Code Sequence</field>
-        <field name="code">vendor.code</field>
-        <field name="prefix">VEN-</field>
-        <field name="padding">5</field>
-        <field name="number_increment">1</field>
-    </record>
 
 
 

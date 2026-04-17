@@ -12,3 +12,6 @@ class AccountMove(models.Model):
     )
 
     _rec_name = "investor_code"
+
+    # def action_open_membership(self):
+    #     pass

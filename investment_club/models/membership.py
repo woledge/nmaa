@@ -94,7 +94,6 @@ class InvestmentMembership(models.Model):
         readonly=True,
         copy=False
     )
-    
     payment_state = fields.Selection(
         related='current_invoice_id.payment_state',
         string='Payment Status',
@@ -232,7 +231,13 @@ class InvestmentMembership(models.Model):
         for vals in vals_list:
             if not vals.get('membership_number') or vals.get('membership_number') == 'New':
                 vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
-        return super().create(vals_list)
+
+        records = super().create(vals_list)
+        for rec in records:
+            if rec.club_id and not rec.investor_code:
+                rec.investor_code = rec._generate_investor_code()
+
+        return records
 
     def action_create_initial_invoice(self):
         self.ensure_one()
@@ -297,6 +302,7 @@ class InvestmentMembership(models.Model):
             rec.invoice_count = sum([
                 bool(rec.initial_invoice_id),
             ])
+
     def action_create_renewal_invoice(self):
         self.ensure_one()
         
@@ -423,9 +429,11 @@ class InvestmentMembership(models.Model):
         """Generate: INVS-ElAhly-00001 (per club)"""
         self.ensure_one()
         sequence = self._get_club_sequence()
+        print(sequence)
         if sequence:
             return sequence.next_by_id()
         return False
+
     # =============================================
     # 4) لما المستخدم يغير النادي
     # =============================================
