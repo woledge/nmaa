@@ -66,8 +66,11 @@
                 
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button type="object" name="action_open_invoice" class="oe_stat__button" icon="fa-file-text-o">
+                        <button type="object" name="action_open_invoice" class="oe_stat_button" icon="fa-file-text-o">
                             <field name="invoice_count" widget="statinfo" string="Invoice"/>
+                        </button>
+                        <button type="object" name="action_open_investment" class="oe_stat_button">
+                            <field name="investment_count" widget="statinfo" string="Investment"/>
                         </button>
                     </div>
                     <!-- العنوان الرئيسي - Internal Ref -->

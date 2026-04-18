@@ -163,6 +163,8 @@ class InvestmentMembership(models.Model):
 
     invoice_count = fields.Integer(compute='_compute_invoice_count')
 
+    investment_count = fields.Integer()
+
     # ===== Onchange =====
 
     @api.onchange('subscription_product_id')
@@ -388,6 +390,11 @@ class InvestmentMembership(models.Model):
             'target': 'current',
         }
 
+    def action_open_investment(self):
+        pass
+
+    def _compute_investment_count(self):
+        pass
     # ===== Sequence / Investor Code (Merged) =====
 
     def _get_club_sequence(self, club_id=None):
