@@ -7,6 +7,7 @@
             <list decoration-warning="renewal_status == 'due'" decoration-danger="renewal_status == 'overdue'">
                 <field name="membership_number" optional="hide"/>
                 <field name="partner_id"/>
+                <field name="investor_code"/>
                 <field name="club_id"/>
                 <field name="initial_membership_fee"/>
                 <field name="annual_subscription_fee"/>

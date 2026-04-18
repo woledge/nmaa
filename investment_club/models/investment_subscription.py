@@ -21,6 +21,7 @@ class InvestmentSubscription(models.Model):
     
     membership_id = fields.Many2one(
         'investment.membership',
+        'investment.membership',
         string='Membership',
         required=True,
         ondelete='cascade'

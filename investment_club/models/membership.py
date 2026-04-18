@@ -2,6 +2,7 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 from datetime import timedelta
+from psycopg2 import IntegrityError
 
 
 class InvestmentMembership(models.Model):
@@ -24,7 +25,6 @@ class InvestmentMembership(models.Model):
         'res.partner',
         string='Customer',
         tracking=True,
-        compute='_compute_customer',
         store=True,  # أضفت store=True عشان يتخزن
         readonly=False,  # يسمح بالتعديل اليدوي
     )
@@ -182,20 +182,16 @@ class InvestmentMembership(models.Model):
             if membership.membership_date:
                 if membership.renewal_ids:
                     last_renewal = membership.renewal_ids.sorted('renewal_date', reverse=True)[0]
+                    membership.expiry_date = last_renewal.new_expiry_date
                     # نبدأ من اليوم اللي بعد الـ expiry date القديم
-                    base_date = last_renewal.new_expiry_date + timedelta(days=1)
                 else:
-                    base_date = membership.membership_date
-                
-                if membership.subscription_period == 'monthly':
-                    # 30 يوم - 1 يوم = 29 يوم (نهاية اليوم 30)
-                    membership.expiry_date = base_date + timedelta(days=29)
-                elif membership.subscription_period == 'quarterly':
-                    # 90 يوم - 1 يوم = 89 يوم
-                    membership.expiry_date = base_date + timedelta(days=89)
-                else:  # yearly
-                    # 365 يوم - 1 يوم = 364 يوم
-                    membership.expiry_date = base_date + timedelta(days=364)
+                    # حساب من membership_date فقط لو مافي تجديدات
+                    if membership.subscription_period == 'monthly':
+                        membership.expiry_date = membership.membership_date + timedelta(days=29)
+                    elif membership.subscription_period == 'quarterly':
+                        membership.expiry_date = membership.membership_date + timedelta(days=89)
+                    else:
+                        membership.expiry_date = membership.membership_date + timedelta(days=364)
             else:
                 membership.expiry_date = False
 
@@ -213,7 +209,7 @@ class InvestmentMembership(models.Model):
             elif not membership.next_renewal_date:
                 membership.renewal_status = 'not_due'
             elif membership.next_renewal_date > today:
-                membership.renewal_status = 'paid'
+                membership.renewal_status = 'not_due'
             elif membership.next_renewal_date == today:
                 membership.renewal_status = 'due'
             else:
@@ -226,21 +222,12 @@ class InvestmentMembership(models.Model):
                 membership.investment_ids.filtered(lambda i: i.state == 'active').mapped('amount')
             )
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            if not vals.get('membership_number') or vals.get('membership_number') == 'New':
-                vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
-
-        records = super().create(vals_list)
-        for rec in records:
-            if rec.club_id and not rec.investor_code:
-                rec.investor_code = rec._generate_investor_code()
-
-        return records
 
     def action_create_initial_invoice(self):
         self.ensure_one()
+
+        if not self.investor_code:
+            self.investor_code = self._generate_investor_code()
 
         if not self.membership_product_id:
             raise UserError(_('Please select membership product!'))
@@ -429,19 +416,77 @@ class InvestmentMembership(models.Model):
         """Generate: INVS-ElAhly-00001 (per club)"""
         self.ensure_one()
         sequence = self._get_club_sequence()
-        print(sequence)
         if sequence:
             return sequence.next_by_id()
         return False
 
-    # =============================================
-    # 4) لما المستخدم يغير النادي
-    # =============================================
-    def write(self, vals):
-        if 'club_id' in vals:
-            for record in self:
-                record.club_id = self.env['res.partner'].browse(vals['club_id'])
-                code = record._generate_investor_code()
-                if code:
-                    vals['investor_code'] = code
-        return super().write(vals)
+
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # membership number
+            if not vals.get('membership_number') or vals.get('membership_number') == 'New':
+                vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
+
+            # investor code generation BEFORE create
+            if vals.get('club_id') and not vals.get('investor_code'):
+                vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
+
+        try:
+            return super().create(vals_list)
+
+        except IntegrityError:
+            # retry مرة كمان في حالة race condition نادرة
+            for vals in vals_list:
+                if vals.get('club_id'):
+                    vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
+
+            return super().create(vals_list)
+
+    # =========================================
+    # COPY (Duplicate Safe)
+    # =========================================
+    def copy(self, default=None):
+        default = dict(default or {})
+
+        default['investor_code'] = False
+        default['membership_number'] = 'New'
+
+        return super().copy(default)
+
+    # =========================================
+    # NO WRITE OVERRIDE ❌
+    # =========================================
+    # احنا intentionally مش بنعدل في write
+    # علشان نحافظ على stability
+
+    # =========================================
+    # INTERNAL GENERATOR (Clean + Reusable)
+    # =========================================
+    def _generate_code_for_vals(self, club_id):
+        club = self.env['investment.club'].browse(club_id)
+
+        sequence_code = f'investor.code.{club.id}'
+
+        sequence = self.env['ir.sequence'].sudo().search([
+            ('code', '=', sequence_code)
+        ], limit=1)
+
+        if not sequence:
+            sequence = self.env['ir.sequence'].sudo().create({
+                'name': f'Investor Code - {club.name}',
+                'code': sequence_code,
+                'prefix': f'INVS-{club.name.replace(" ", "")}-',
+                'padding': 5,
+                'number_increment': 1,
+            })
+
+        return sequence.next_by_id()
+    _sql_constraints = [
+        (
+            'unique_investor_code_per_club',
+            'unique(investor_code, club_id)',
+            'Investor code must be unique per club!'
+        ),
+    ]
