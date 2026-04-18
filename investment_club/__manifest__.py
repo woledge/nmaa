@@ -28,6 +28,7 @@
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/sequences.xml',
+        'data/cron_data.xml',
         'views/contact_view.xml',
         'views/investment_club_views.xml',
         'views/investment_project_views.xml',

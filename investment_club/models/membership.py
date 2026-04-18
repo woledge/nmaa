@@ -1,132 +1,130 @@
-# investment_club/models/membership.py
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
-from datetime import timedelta
 from psycopg2 import IntegrityError
+from datetime import timedelta
 
 
 class InvestmentMembership(models.Model):
     _name = 'investment.membership'
     _description = 'Investment Membership'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _rec_name = 'investor_code'
 
-    # ===== رقم العضوية الفريد للعميل =====
+    # ===== Basic Fields =====
 
-    
     membership_number = fields.Char(
         string='Internal Reference',
         readonly=True,
         copy=False,
         default='New'
     )
-    
-    # ⚠️ التصحيح: شلت required=True و compute مع بعض
+
     partner_id = fields.Many2one(
         'res.partner',
         string='Customer',
+        required=True,
         tracking=True,
-        store=True,  # أضفت store=True عشان يتخزن
-        readonly=False,  # يسمح بالتعديل اليدوي
     )
-    
+
     club_id = fields.Many2one(
         'investment.club',
         string='Club',
         required=True,
         tracking=True
     )
-    
+
     membership_product_id = fields.Many2one(
         'product.product',
         string='Membership Product',
         domain="[('type', '=', 'service')]",
         required=True
     )
-    
+
     initial_membership_fee = fields.Float(
         string='Initial Membership Fee',
         related='membership_product_id.lst_price',
         readonly=True,
         store=True
     )
-    
+
     subscription_product_id = fields.Many2one(
         'product.product',
         string='Subscription Product',
         domain="[('type', '=', 'service')]"
     )
-    
+
     annual_subscription_fee = fields.Float(
         string='Annual Subscription Fee',
         required=True
     )
-    
+
     subscription_period = fields.Selection([
         ('monthly', 'Monthly'),
         ('quarterly', 'Quarterly'),
         ('yearly', 'Yearly')
     ], string='Subscription Period', default='yearly', required=True)
-    
+
     membership_date = fields.Date(
         string='Start Date',
         default=fields.Date.today,
         required=True
     )
-    
+
     expiry_date = fields.Date(
         string='Expiry Date',
         compute='_compute_dates',
         store=True
     )
-    
+
     auto_renew = fields.Boolean(string='Auto Renew', default=True)
-    
+
     initial_invoice_id = fields.Many2one(
         'account.move',
         string='Initial Invoice',
         readonly=True,
         copy=False
     )
-    
+
     current_invoice_id = fields.Many2one(
         'account.move',
         string='Current/Renewal Invoice',
         readonly=True,
         copy=False
     )
+
     payment_state = fields.Selection(
         related='current_invoice_id.payment_state',
         string='Payment Status',
         readonly=True,
         store=True
     )
-    
+
     renewal_ids = fields.One2many(
         'membership.renewal',
         'membership_id',
         string='Renewal History'
     )
-    
+
     next_renewal_date = fields.Date(
         string='Next Renewal Date',
         compute='_compute_next_renewal',
         store=True
     )
-    
+
     next_renewal_amount = fields.Float(
         string='Next Renewal Amount',
         related='annual_subscription_fee',
         readonly=True,
         store=True
     )
-    
+
     renewal_status = fields.Selection([
         ('paid', 'Paid'),
         ('due', 'Due'),
         ('overdue', 'Overdue'),
         ('not_due', 'Not Due Yet')
     ], string='Renewal Status', compute='_compute_renewal_status', store=True)
-    
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('initial_invoiced', 'Initial Invoiced'),
@@ -134,66 +132,67 @@ class InvestmentMembership(models.Model):
         ('expired', 'Expired'),
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', tracking=True)
-    
+
     investment_ids = fields.One2many(
         'investment.subscription',
         'membership_id',
         string='Investments'
     )
-    
+
     total_invested = fields.Float(
         string='Total Invested',
         compute='_compute_total',
         store=True
     )
-    
+
     company_id = fields.Many2one(
         'res.company',
         string='Company',
         default=lambda self: self.env.company
     )
-    
+
     currency_id = fields.Many2one(
         'res.currency',
         related='company_id.currency_id',
         store=True
     )
-    
+
     notes = fields.Text(string='Notes')
 
+    investor_code = fields.Char(string='Investor code', store=True)
 
-    investor_code = fields.Char(string='Investor code',store=True)
-
-    invoice_id = fields.Many2one('account.move', string='invoice')
     invoice_count = fields.Integer(compute='_compute_invoice_count')
 
-
-
+    # ===== Onchange =====
 
     @api.onchange('subscription_product_id')
     def _onchange_subscription_product(self):
-        if self.subscription_product_id and not self.annual_subscription_fee:
+        """Sync annual subscription fee from selected product"""
+        if self.subscription_product_id:
             self.annual_subscription_fee = self.subscription_product_id.lst_price
 
-    @api.depends('membership_date', 'subscription_period', 'renewal_ids')
+    # ===== Compute Methods =====
+
+    @api.depends('membership_date', 'subscription_period', 'renewal_ids.new_expiry_date')
     def _compute_dates(self):
-        """حساب تاريخ الانتهاء - نهاية المدة (يوم قبل بداية الفترة الجديدة)"""
+        """Compute expiry date based on membership date or last renewal."""
         for membership in self:
-            if membership.membership_date:
-                if membership.renewal_ids:
-                    last_renewal = membership.renewal_ids.sorted('renewal_date', reverse=True)[0]
-                    membership.expiry_date = last_renewal.new_expiry_date
-                    # نبدأ من اليوم اللي بعد الـ expiry date القديم
-                else:
-                    # حساب من membership_date فقط لو مافي تجديدات
-                    if membership.subscription_period == 'monthly':
-                        membership.expiry_date = membership.membership_date + timedelta(days=29)
-                    elif membership.subscription_period == 'quarterly':
-                        membership.expiry_date = membership.membership_date + timedelta(days=89)
-                    else:
-                        membership.expiry_date = membership.membership_date + timedelta(days=364)
-            else:
+            if not membership.membership_date:
                 membership.expiry_date = False
+                continue
+
+            if membership.renewal_ids:
+                # Use new_expiry_date directly from the latest renewal
+                last_renewal = membership.renewal_ids.sorted('renewal_date', reverse=True)[0]
+                membership.expiry_date = last_renewal.new_expiry_date
+            else:
+                # No renewals yet, calculate from membership_date
+                if membership.subscription_period == 'monthly':
+                    membership.expiry_date = membership.membership_date + timedelta(days=29)
+                elif membership.subscription_period == 'quarterly':
+                    membership.expiry_date = membership.membership_date + timedelta(days=89)
+                else:  # yearly
+                    membership.expiry_date = membership.membership_date + timedelta(days=364)
 
     @api.depends('expiry_date')
     def _compute_next_renewal(self):
@@ -222,6 +221,18 @@ class InvestmentMembership(models.Model):
                 membership.investment_ids.filtered(lambda i: i.state == 'active').mapped('amount')
             )
 
+    @api.depends('initial_invoice_id', 'current_invoice_id')
+    def _compute_invoice_count(self):
+        for rec in self:
+            count = 0
+            if rec.initial_invoice_id:
+                count += 1
+            # Count renewal invoice only if different from initial
+            if rec.current_invoice_id and rec.current_invoice_id != rec.initial_invoice_id:
+                count += 1
+            rec.invoice_count = count
+
+    # ===== Actions =====
 
     def action_create_initial_invoice(self):
         self.ensure_one()
@@ -250,7 +261,6 @@ class InvestmentMembership(models.Model):
 
         invoice = self.env['account.move'].create(invoice_vals)
 
-        # ✅ الربط + تغيير الحالة
         self.write({
             'initial_invoice_id': invoice.id,
             'current_invoice_id': invoice.id,
@@ -283,19 +293,12 @@ class InvestmentMembership(models.Model):
             'res_id': invoice.id,
         }
 
-    @api.depends('initial_invoice_id', 'current_invoice_id')
-    def _compute_invoice_count(self):
-        for rec in self:
-            rec.invoice_count = sum([
-                bool(rec.initial_invoice_id),
-            ])
-
     def action_create_renewal_invoice(self):
         self.ensure_one()
-        
+
         if self.annual_subscription_fee <= 0:
             raise UserError(_('Please set annual subscription fee!'))
-        
+
         renewal_vals = {
             'membership_id': self.id,
             'renewal_date': fields.Date.today(),
@@ -305,29 +308,29 @@ class InvestmentMembership(models.Model):
             'new_expiry_date': self._calculate_new_expiry(),
         }
         renewal = self.env['membership.renewal'].create(renewal_vals)
-        
+
         product = self.subscription_product_id or self.membership_product_id
-        
+
         invoice_vals = {
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
             'invoice_date': fields.Date.today(),
             'invoice_line_ids': [(0, 0, {
                 'product_id': product.id,
-                'name': _('Annual Subscription - %s - %s') % (self.club_id.name, ),
+                'name': _('Annual Subscription - %s - %s') % (self.club_id.name,),
                 'quantity': 1,
                 'price_unit': self.annual_subscription_fee,
             })],
         }
-        
+
         invoice = self.env['account.move'].create(invoice_vals)
         renewal.write({'invoice_id': invoice.id, 'state': 'invoiced'})
-        
+
+        # Only update current invoice, preserve active state
         self.write({
             'current_invoice_id': invoice.id,
-            'state': 'initial_invoiced'
         })
-        
+
         return {
             'type': 'ir.actions.act_window',
             'name': 'Renewal Invoice',
@@ -347,23 +350,28 @@ class InvestmentMembership(models.Model):
             raise UserError(_('Invoice is not paid yet!'))
 
     def _calculate_new_expiry(self):
-        """حساب تاريخ الانتهاء الجديد - نهاية المدة (يوم قبل بداية الفترة الجديدة)"""
+        """Calculate new expiry starting from the day after current expiry."""
         if not self.expiry_date:
             return fields.Date.today()
-        
-        # نبدأ من اليوم اللي بعد الـ expiry date
+
         new_start = self.expiry_date + timedelta(days=1)
-        
+
         if self.subscription_period == 'monthly':
-            return new_start + timedelta(days=29)  # 30 يوم - 1
+            return new_start + timedelta(days=29)
         elif self.subscription_period == 'quarterly':
-            return new_start + timedelta(days=89)  # 90 يوم - 1
+            return new_start + timedelta(days=89)
         else:  # yearly
-            return new_start + timedelta(days=364)  # 365 يوم - 1
+            return new_start + timedelta(days=364)
 
     def action_cancel(self):
+        """Cancel membership and cancel unpaid related invoices."""
+        # Cancel current invoice if unpaid
         if self.current_invoice_id and self.current_invoice_id.payment_state != 'paid':
             self.current_invoice_id.button_cancel()
+        # Cancel renewal invoices that are still unpaid
+        for renewal in self.renewal_ids.filtered(lambda r: r.state == 'invoiced'):
+            if renewal.invoice_id and renewal.invoice_id.payment_state != 'paid':
+                renewal.invoice_id.button_cancel()
         self.write({'state': 'cancelled'})
 
     def action_create_investment(self):
@@ -380,27 +388,34 @@ class InvestmentMembership(models.Model):
             'target': 'current',
         }
 
-    # =============================================
-    # 1) يجيب أو ينشئ sequence للنادي
-    # =============================================
-    def _get_club_sequence(self):
-        """Get or create a dedicated sequence for this club"""
-        self.ensure_one()
-        if not self.club_id:
+    # ===== Sequence / Investor Code (Merged) =====
+
+    def _get_club_sequence(self, club_id=None):
+        """Get or create a dedicated sequence for a club.
+
+        Accepts either a club_id (int) for use during create,
+        or reads from self.club_id for use on existing records.
+        """
+        if club_id:
+            club = self.env['investment.club'].browse(club_id)
+        elif hasattr(self, 'club_id') and self.club_id:
+            club = self.club_id
+        else:
             return False
 
-        club_name = self.club_id.name.replace(' ', '')
-        sequence_code = f'investor.code.{self.club_id.id}'
+        if not club:
+            return False
 
-        # هل فيه sequence لهذا النادي؟
+        club_name = club.name.replace(' ', '')
+        sequence_code = f'investor.code.{club.id}'
+
         sequence = self.env['ir.sequence'].sudo().search([
             ('code', '=', sequence_code),
         ], limit=1)
 
         if not sequence:
-            # أول مرة → أنشئ sequence خاص بالنادي
             sequence = self.env['ir.sequence'].sudo().create({
-                'name': f'Investor Code - {self.club_id.name}',
+                'name': f'Investor Code - {club.name}',
                 'code': sequence_code,
                 'prefix': f'INVS-{club_name}-',
                 'padding': 5,
@@ -409,9 +424,6 @@ class InvestmentMembership(models.Model):
 
         return sequence
 
-    # =============================================
-    # 2) توليد الكود من sequence النادي
-    # =============================================
     def _generate_investor_code(self):
         """Generate: INVS-ElAhly-00001 (per club)"""
         self.ensure_one()
@@ -420,69 +432,144 @@ class InvestmentMembership(models.Model):
             return sequence.next_by_id()
         return False
 
-
+    # ===== CRUD Overrides =====
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # membership number
+            # Generate membership number
             if not vals.get('membership_number') or vals.get('membership_number') == 'New':
                 vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
 
-            # investor code generation BEFORE create
+            # Generate investor code before create
             if vals.get('club_id') and not vals.get('investor_code'):
                 vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
 
         try:
             return super().create(vals_list)
-
         except IntegrityError:
-            # retry مرة كمان في حالة race condition نادرة
+            # Retry on race condition (duplicate investor_code)
             for vals in vals_list:
                 if vals.get('club_id'):
                     vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
-
             return super().create(vals_list)
 
-    # =========================================
-    # COPY (Duplicate Safe)
-    # =========================================
     def copy(self, default=None):
+        """Reset investor code and membership number on duplicate."""
         default = dict(default or {})
-
         default['investor_code'] = False
         default['membership_number'] = 'New'
-
         return super().copy(default)
 
-    # =========================================
-    # NO WRITE OVERRIDE ❌
-    # =========================================
-    # احنا intentionally مش بنعدل في write
-    # علشان نحافظ على stability
-
-    # =========================================
-    # INTERNAL GENERATOR (Clean + Reusable)
-    # =========================================
     def _generate_code_for_vals(self, club_id):
-        club = self.env['investment.club'].browse(club_id)
+        """Generate investor code from vals dict (used during create)."""
+        sequence = self._get_club_sequence(club_id)
+        if sequence:
+            return sequence.next_by_id()
+        return False
 
-        sequence_code = f'investor.code.{club.id}'
+    # ===== Cron / Scheduled Actions =====
 
-        sequence = self.env['ir.sequence'].sudo().search([
-            ('code', '=', sequence_code)
-        ], limit=1)
+    def _get_config(self, key, default=False):
+        """Read a config parameter value."""
+        return self.env['ir.config_parameter'].sudo().get_param(
+            'investment_club.%s' % key, default
+        )
 
-        if not sequence:
-            sequence = self.env['ir.sequence'].sudo().create({
-                'name': f'Investor Code - {club.name}',
-                'code': sequence_code,
-                'prefix': f'INVS-{club.name.replace(" ", "")}-',
-                'padding': 5,
-                'number_increment': 1,
-            })
+    def _cron_send_renewal_reminders(self):
+        """Send renewal reminder notifications for memberships expiring soon.
 
-        return sequence.next_by_id()
+        Reads from settings:
+        - investment_club.enable_renewal_notifications
+        - investment_club.auto_renewal_days
+        """
+        # Check if notifications are enabled
+        if not self._get_config('enable_renewal_notifications', 'True') == 'True':
+            return
+
+        days_before = int(self._get_config('auto_renewal_days', '7'))
+        today = fields.Date.today()
+        reminder_date = today + timedelta(days=days_before)
+
+        # Find active memberships expiring within the reminder window
+        memberships = self.search([
+            ('state', '=', 'active'),
+            ('expiry_date', '<=', reminder_date),
+            ('expiry_date', '>=', today),
+            ('auto_renew', '=', True),
+        ])
+
+        for membership in memberships:
+            days_left = (membership.expiry_date - today).days
+            self._send_renewal_notification(membership, days_left)
+
+        # Also notify overdue memberships
+        overdue = self.search([
+            ('state', '=', 'active'),
+            ('expiry_date', '<', today),
+        ])
+
+        for membership in overdue:
+            days_overdue = (today - membership.expiry_date).days
+            self._send_overdue_notification(membership, days_overdue)
+
+    def _send_renewal_notification(self, membership, days_left):
+        """Send a renewal reminder via Odoo's chatter/message system."""
+        subject = _('Membership Renewal Reminder: %s') % (membership.investor_code or membership.membership_number)
+        body = _(
+            '<p>Dear <b>%s</b>,</p>'
+            '<p>Your membership in <b>%s</b> will expire in <b>%s days</b> on <b>%s</b>.</p>'
+            '<p>Renewal Amount: <b>%s %s</b></p>'
+            '<p>Please renew your membership to avoid any interruption.</p>'
+        ) % (
+            membership.partner_id.name or '',
+            membership.club_id.name or '',
+            days_left,
+            membership.expiry_date,
+            membership.currency_id.symbol or '',
+            membership.annual_subscription_fee,
+        )
+        membership.message_post(
+            subject=subject,
+            body=body,
+            partner_ids=[membership.partner_id.id],
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
+
+    def _send_overdue_notification(self, membership, days_overdue):
+        """Send an overdue notification."""
+        subject = _('انتهاء العضوية: %s') % (membership.investor_code or membership.membership_number)
+
+        body = _(
+            '<p>عزيزي <b>%s</b>،</p>'
+            '<p>لقد انتهت عضويتك في <b>%s</b> منذ <b>%s يوم</b> بتاريخ <b>%s</b>.</p>'
+            '<p>يرجى تجديد العضوية في أقرب وقت ممكن.</p>'
+        ) % (
+                   membership.partner_id.name or '',
+                   membership.club_id.name or '',
+                   days_overdue,
+                   membership.expiry_date,
+               )
+
+        membership.message_post(
+            subject=subject,
+            body=body,
+            partner_ids=[membership.partner_id.id],
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
+    def _cron_auto_expire_memberships(self):
+        """Automatically set active memberships to expired if past expiry."""
+        today = fields.Date.today()
+        expired = self.search([
+            ('state', '=', 'active'),
+            ('expiry_date', '<', today),
+        ])
+        expired.write({'state': 'expired'})
+
+    # ===== SQL Constraints =====
+
     _sql_constraints = [
         (
             'unique_investor_code_per_club',
