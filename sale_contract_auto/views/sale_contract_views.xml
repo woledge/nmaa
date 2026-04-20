@@ -58,55 +58,69 @@
                             class="btn-secondary"
                             invisible="state != 'financial_approved'"/>
 
-
-
-
                     <button name="action_finish"
                             string="Finish"
                             type="object"
                             class="btn-danger"
                             invisible="state == 'finished'"/>
 
-
                     <button name="action_reset_to_draft"
                         string="Reset to Draft"
                         type="object"
                         class="btn-danger"
                         invisible="state not in 'confirmed,financial_approved,legal_approved,finished'" />
-                        <button name="print_contract_report"
-                                type="object"
-                                string="Print Contract"
-                                class="btn-primary"/>
 
+                    <button name="print_contract_report"
+                            type="object"
+                            string="Print Contract"
+                            class="btn-primary"/>
 
                 </header>
 
                 <sheet>
 
-                    <group>
-                        <field name="name"/>
-                        <field name="contract_date"/>
-                        <field name="partner_id"/>
-                        <field name="contract_title_name"/>
-                        <field name="contract_template_id"/>
+                    <!-- ================= TOP SUMMARY ================= -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- ================= MAIN INFO ================= -->
+                    <group col="2">
+
+                        <group string="Contract Information">
+                            <field name="contract_date"/>
+                            <field name="partner_id"/>
+                            <field name="contract_title_name"/>
+                        </group>
+
+                        <group string="Document Settings">
+                            <field name="contract_template_id"/>
+                            <field name="company_representative"/>
+                        </group>
+
                     </group>
 
+                    <!-- ================= NOTEBOOK ================= -->
                     <notebook>
 
+                        <!-- AGREEMENT -->
                         <page string="Agreement Terms">
                             <field name="agreement_terms"
                                    widget="html"
                                    options="{'sanitize': False}"
-                                   style="direction:rtl;"
-                                   readonly="1"
-                                   groups="base.group_user"/>
+                                   style="direction: rtl;"
+                                   readonly="1"/>
                         </page>
-                      <page string="notes">
-                        <field name="note"/>
-                      </page>
 
+                        <!-- NOTES -->
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+
+                        <!-- LINES -->
                         <page string="Contract Lines" invisible="1">
-
                             <field name="contract_line_ids">
                                 <list editable="bottom">
                                     <field name="product_id"/>
@@ -117,64 +131,107 @@
                                 </list>
                             </field>
 
-                            <group>
+                            <group class="mt-2">
                                 <field name="subtotal_total"
                                        widget="monetary"
                                        readonly="1"/>
                             </group>
-
                         </page>
 
+                        <!-- PARTIES -->
                         <page string="Parties">
-                            <group>
-                                <field name="first_party_name"/>
-                                <field name="first_party_signature" widget="signature"/>
-                                <field name="second_party_name"/>
-                                <field name="second_party_signature" widget="signature"/>
+
+                            <group col="2">
+
+                                <group string="First Party">
+                                    <field name="first_party_name"/>
+                                    <field name="first_party_signature" widget="signature"/>
+                                </group>
+
+                                <group string="Second Party">
+                                    <field name="second_party_name"/>
+                                    <field name="second_party_signature" widget="signature"/>
+                                </group>
+
                             </group>
+
                         </page>
 
                     </notebook>
 
                 </sheet>
-
                 <chatter/>
 
             </form>
         </field>
     </record>
 
-
-    <!-- ================================================= -->
-    <!--                CONTRACT TEMPLATES                 -->
-    <!-- ================================================= -->
-
-    <record id="view_contract_template_tree" model="ir.ui.view">
-        <field name="name">contract.template.tree</field>
-        <field name="model">contract.template</field>
+    <record id="view_sale_contract_kanban" model="ir.ui.view">
+        <field name="name">sale.contract.kanban</field>
+        <field name="model">sale.contract</field>
         <field name="arch" type="xml">
-            <list>
+
+            <kanban class="o_kanban_small_column">
                 <field name="name"/>
-            </list>
+                <field name="partner_id"/>
+                <field name="contract_date"/>
+                <field name="amount_total"/>
+                <field name="state"/>
+
+                <templates>
+
+                    <t t-name="kanban-box">
+
+                        <div class="oe_kanban_global_click o_kanban_card">
+
+                            <!-- HEADER -->
+                            <div class="d-flex justify-content-between">
+                                <strong>
+                                    <field name="name"/>
+                                </strong>
+
+                                <span class="badge"
+                                      t-attf-class="
+                                          #{record.state.raw_value == 'draft' and 'bg-primary' or ''}
+                                          #{record.state.raw_value == 'confirmed' and 'bg-info' or ''}
+                                          #{record.state.raw_value == 'financial_approved' and 'bg-warning' or ''}
+                                          #{record.state.raw_value == 'legal_approved' and 'bg-secondary' or ''}
+                                          #{record.state.raw_value == 'finished' and 'bg-success' or ''}
+                                      ">
+                                    <field name="state"/>
+                                </span>
+                            </div>
+
+                            <hr/>
+
+                            <!-- BODY -->
+                            <div>
+                                <div>
+                                    <i class="fa fa-user me-1"/>
+                                    <field name="partner_id"/>
+                                </div>
+
+                                <div>
+                                    <i class="fa fa-calendar me-1"/>
+                                    <field name="contract_date"/>
+                                </div>
+
+                                <div>
+                                    <i class="fa fa-money me-1"/>
+                                    <field name="amount_total"/>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </t>
+
+                </templates>
+
+            </kanban>
+
         </field>
     </record>
-
-    <record id="view_contract_template_form" model="ir.ui.view">
-        <field name="name">contract.template.form</field>
-        <field name="model">contract.template</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="content" direction="rtl" class="text-right"/>
-                    </group>
-                </sheet>
-                <chatter/>
-            </form>
-        </field>
-    </record>
-
 
     <!-- ================================================= -->
     <!--                  CONTRACT TITLE                   -->
@@ -209,7 +266,6 @@
     <!--                   SALE ORDER                      -->
     <!-- ================================================= -->
 
-    <!-- Contract Button -->
     <record id="view_order_form_inherit_contract_button" model="ir.ui.view">
         <field name="name">sale.order.contract.button</field>
         <field name="model">sale.order</field>
@@ -217,7 +273,6 @@
         <field name="arch" type="xml">
 
             <xpath expr="//sheet/div[@class='oe_button_box']" position="inside">
-
                 <button name="action_view_contract"
                         type="object"
                         class="oe_stat_button"
@@ -228,16 +283,12 @@
                     <div class="o_stat_info">
                         <span>Contract</span>
                     </div>
-
                 </button>
-
             </xpath>
 
         </field>
     </record>
 
-
-    <!-- Contract Template + Title -->
     <record id="view_order_form_inherit_contract_fields" model="ir.ui.view">
         <field name="name">sale.order.contract.fields</field>
         <field name="model">sale.order</field>
@@ -253,20 +304,11 @@
     </record>
 
 
-    <!-- ================================================= -->
-    <!--                     ACTIONS                       -->
-    <!-- ================================================= -->
-
+    <!-- Actions -->
     <record id="action_sale_contracts" model="ir.actions.act_window">
         <field name="name">Sale Contracts</field>
         <field name="res_model">sale.contract</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
-    <record id="action_contract_templates" model="ir.actions.act_window">
-        <field name="name">Contract Templates</field>
-        <field name="res_model">contract.template</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
     </record>
 
     <record id="action_contract_title" model="ir.actions.act_window">
@@ -276,27 +318,17 @@
     </record>
 
 
-    <!-- ================================================= -->
-    <!--                       MENUS                       -->
-    <!-- ================================================= -->
-
+    <!-- Menus -->
     <menuitem id="menu_contract_root"
               name="Contracts"
               sequence="100"
-              web_icon="sale_contract_auto,static/description/icon.png"
-    />
+              web_icon="sale_contract_auto,static/description/icon.png"/>
 
     <menuitem id="menu_contracts"
               name="Contracts"
               parent="menu_contract_root"
               action="action_sale_contracts"
               sequence="1"/>
-
-    <menuitem id="menu_contract_templates"
-              name="Contract Templates"
-              parent="menu_contract_root"
-              action="action_contract_templates"
-              sequence="10"/>
 
     <menuitem id="menu_contract_titles"
               name="Contract Titles"

@@ -4,7 +4,6 @@
       <field name="name">sale.contract.form.inherit.print.button</field>
       <field name="model">sale.contract</field>
       <field name="inherit_id" ref="sale_contract_auto.view_sale_contract_form"/>
-
       <field name="arch" type="xml">
         <header position="inside">
           <button name="print_contract_report" type="object" string="Print Contract" class="btn-primary"/>

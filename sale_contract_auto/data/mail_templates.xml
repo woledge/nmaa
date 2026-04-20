@@ -1,40 +1,9 @@
 <odoo>
-    <record id="email_template_contract_link" model="mail.template">
-        <field name="name">Contract - Send Link to Customer</field>
-        <field name="model_id" ref="sale_contract_auto.model_sale_contract"/>
 
-        <field name="email_from">
-            {{ (object.create_uid.email_formatted or user.email_formatted) }}
-        </field>
+    <data>
+        <record id="email_template_contract_link" model="mail.template">
+            <field name="model_id" ref="sale_contract_auto.model_sale_contract"/>
 
-        <field name="email_to">
-            {{ object.partner_id.email }}
-        </field>
-
-        <field name="body_html" type="html">
-<div style="margin: 0; padding: 0; font-size: 14px;">
-    <p>عزيزي/عزيزتي <t t-out="object.partner_id.name"/>,</p>
-
-    <p>
-        نود إعلامكم بأنه تم إعداد عقد جديد بعنوان
-        <strong><t t-out="object.contract_title_name.name or object.name"/></strong>
-        ، ويمكنكم الاطلاع عليه وتوقيعه من خلال الرابط التالي:
-    </p>
-
-    <p style="text-align: center; margin: 20px 0;">
-        <a t-att-href="object.get_portal_url()"
-           style="background-color: #1C5B8B; color: #fff; padding: 10px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-            عرض العقد
-        </a>
-    </p>
-
-    <p>في حال وجود أي استفسار، لا تتردد في التواصل معنا.</p>
-
-    <p>
-        مع خالص التحيات،<br/>
-        <t t-out="object.env.company.name"/>
-    </p>
-</div>
-        </field>
-    </record>
+        </record>
+    </data>
 </odoo>

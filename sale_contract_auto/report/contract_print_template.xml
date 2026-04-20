@@ -4,268 +4,101 @@
     <t t-call="web.html_container">
       <t t-foreach="docs" t-as="doc">
         <t t-call="web.basic_layout">
-
-          <!-- فرض RTL على كل التقرير -->
-          <style>
-            .page, .page div, .page p, .page span, .page h1, .page h2, .page h3, .page h4, .page td, .page th {
-              direction: rtl !important;
-              unicode-bidi: embed !important;
-              text-align: right !important;
-              font-family: 'Arial', 'Noto Sans Arabic', 'Tahoma', sans-serif !important;
-            }
-            .page .text-center, .page [style*="text-align: center"] {
-              text-align: center !important;
-              unicode-bidi: plaintext !important;
-            }
-          </style>
-
-          <div class="page" dir="rtl">
-
-            <!-- عنوان العقد -->
-            <h2 class="text-center" style="margin-bottom: 30px;" dir="rtl"
-                t-esc="doc.contract_title_name.name or 'عقد استثمار'"/>
-
-            <!-- شريط معلومات العقد -->
-            <div style="border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
-              <div style="display: inline-block; width: 50%;">
-                <strong>رقم عقد الاستثمار :</strong>
-                <span t-esc="doc.name"/>
-              </div>
-              <div style="display: inline-block; width: 50%; text-align: left;">
-                <t t-if="doc.company_stamp">
-                  <img t-att-src="'data:image/png;base64,' + doc.company_stamp.decode('utf-8')"
-                       style="max-height: 70px; max-width: 120px; float: left; margin-left: 10px;"/>
-                </t>
-              </div>
+          <div class="page" direction="rtl" style="dir: rtl;">
+            <!-- Title -->
+            <h2 class="text-center" style="margin-bottom: 30px;" t-esc="doc.contract_title_name.name or 'Contract'"/>
+            <!-- Contract Info -->
+            <div class="mb-2" style="direction:rtl;">
+              <strong>رقم العقد :</strong>
+              <span t-esc="doc.name"/>
             </div>
-
-            <!-- التاريخ -->
-            <div class="mb-4" style="margin-top: 15px;" dir="rtl">
-              <span t-esc="doc.get_arabic_date()"/>
+            <div class="mb-4" style="direction:rtl;">
+              <span  t-esc="doc.get_arabic_date()"/>
             </div>
-
-            <!-- مدة العقد / فترة الاستثمار -->
-            <t t-if="doc.start_date and doc.end_date">
-              <div class="mb-4" style="background: #f5f5f5; padding: 8px 12px; border-radius: 4px;" dir="rtl">
-                <strong>مدة العقد / فترة الاستثمار :</strong>
-                من <span t-esc="doc.start_date.strftime('%d/%m/%Y') if doc.start_date else ''"/>
-                إلى <span t-esc="doc.end_date.strftime('%d/%m/%Y') if doc.end_date else ''"/>
-                <t t-if="doc.get_end_date_arabic()">
-                  <br/>
-                  <span t-esc="doc.get_end_date_arabic()"/>
-                </t>
-              </div>
-            </t>
-
-            <!-- بيانات أطراف الاستثمار -->
+            <!-- Parties Info -->
             <div class="mb-4">
-              <h4 style="margin-bottom: 10px;">بيانات أطراف الاستثمار</h4>
-              <div style="border: 1px solid #ddd; padding: 12px; border-radius: 4px;">
+                    <p style="direction:rtl;">
+                        <strong>تم الاتفاق بين كل من:</strong>
+                        <br/>
+                        <span t-field="doc.first_party_name"/> <t t-if="doc.first_party_id.company_registry">
+                            سجل تجاري رقم (<span t-field="doc.first_party_id.first_party_registry"/>)
+                        </t>
 
-                <!-- الطرف الأول -->
-                <p style="margin-bottom: 10px;" dir="rtl">
-                  <strong>الطرف الأول (صاحب المشروع / الجهة المستفيدة) :</strong>
-                  <br/>
-                  <span t-esc="doc.first_party_name"/>
-                  <t t-if="doc.first_party_registry">
-                    السجل التجاري رقم (<span t-esc="doc.first_party_registry"/>)
+                        <br/>
+                        <strong>ومقرها القانوني:</strong>
+                        <span t-field="doc.first_party_address"/>
+                        <br/>
+                        <strong>ويمثلها قانوناً فى إبرام هذا العقد والتوقيع عليه السيد /</strong>
+                        <strong>
+                            <t t-if="doc.company_representative">
+                            <span t-esc="doc.company_representative"/>
+                            </t>
+                            <t t-else="">
+                                ..........................................
+                            </t>
+                        </strong>
+
+                    </p>
+                <span style="background: #e8f4fd; padding: 2px 8px; border-radius: 3px; font-size: 12px;">  (طرف اول منتفع )</span>
+
+               <p style="margin-top: 15px; direction: rtl; text-align: right;">
+                    <strong>السيد / </strong>
+                    <span t-field="doc.second_party_name"/>
+
+                    <strong> المقيم في / </strong>
+                    <span t-field="doc.second_party_address"/>
+
+                    <br/>
+                    <strong>رقم قومي / </strong>
+                    <span t-field="doc.second_party_id_card"/>
+                </p>
+                <span style="background: #e8f4fd; padding: 2px 8px; border-radius: 3px; font-size: 12px;">( طرف ثانى - الشريك )</span>
+
+
+            </div>
+            <!-- Contract Items -->
+            <div class="mb-4">
+            </div>
+            <div style="height: 1px;"></div>
+            <!-- Terms -->
+            <div class="mb-4" style="direction:rtl;">
+              <div t-raw="doc.agreement_terms" class="ml-3"/></div>
+            <div class="mt-5" style="direction:rtl;">
+              <strong>التوقيعات :</strong>
+              <div class="row mt-3">
+                <!-- First Party Signature -->
+                <div class="col-6 text-center">
+                  <p>
+                    <strong>توقيع الطرف الاول :</strong>
+                  </p>
+                  <t t-if="doc.first_party_signature">
+                  <img t-if="doc.first_party_signature"
+                       t-att-src="'/web/image/%s/%s/first_party_signature' % (doc._name, doc.id)"
+                       style="max-height:80px; border:1px solid #ccc; padding:5px;"/>
                   </t>
-                  <br/>
-                  <strong>العنوان :</strong>
-                  <span t-esc="doc.first_party_address"/>
-                  <br/>
-                  <strong>الممثل القانوني / </strong>
-                  <t t-set="contact" t-value="doc.first_party_id.child_ids[:1]"/>
-                  <span t-esc="contact[0].name if contact else '..........................................'"/>
-                </p>
-                <span style="background: #e8f4fd; padding: 2px 8px; border-radius: 3px; font-size: 12px;" dir="rtl">( الطرف الأول - صاحب المشروع )</span>
+                  <t t-else="">
+                    <div style="height: 80px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">                                    </div>
+                  </t>
+                </div>
+                <!-- Second Party Signature -->
+                <div class="col-6 text-center">
+                  <p>
+                    <strong>توقيع الطرف الثاني :</strong>
+                  </p>
+                  <t t-if="doc.second_party_signature">
+                    <img t-if="doc.second_party_signature"
+     t-att-src="'/web/image/%s/%s/second_party_signature' % (doc._name, doc.id)"
+     style="max-height:80px; border:1px solid #ccc; padding:5px;"/>
 
-                <!-- الطرف الثاني -->
-                <p style="margin-top: 15px; margin-bottom: 10px;" dir="rtl">
-                  <strong>الطرف الثاني (المستثمر / جهة التمويل) :</strong>
-                  <br/>
-                  <span t-esc="doc.second_party_name"/>
-                  <br/>
-                  <strong>العنوان بـ / </strong>
-                  <span t-esc="doc.second_party_address"/>
-                  <br/>
-                  <strong>رقم الهوية / </strong>
-                  <span t-esc="doc.second_party_id_card"/>
-                </p>
-                <span style="background: #e8f4fd; padding: 2px 8px; border-radius: 3px; font-size: 12px;" dir="rtl">( الطرف الثاني - المستثمر )</span>
 
+                  </t>
+                  <t t-else="">
+                    <div style="height: 80px; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">                                    </div>
+                  </t>
+                </div>
               </div>
             </div>
-
-            <!-- جدول تفاصيل الاستثمار -->
-            <t t-if="doc.contract_line_ids">
-              <div class="mb-4">
-                <h4 style="margin-bottom: 10px;">تفاصيل الاستثمار</h4>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-                  <thead>
-                    <tr style="background: #333; color: white;">
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">م</th>
-                      <th style="padding: 8px; border: 1px solid #999;">عنصر الاستثمار</th>
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">النسبة / الكمية</th>
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">القيمة / السعر</th>
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">الإجمالي</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <t t-foreach="doc.contract_line_ids" t-as="line" index-as="idx">
-                      <tr>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">
-                          <t t-esc="idx + 1"/>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd;" dir="rtl">
-                          <t t-esc="line.name or line.product_id.display_name"/>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                          <t t-esc="'{0:,.2f}'.format(line.quantity)"/>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                          <t t-esc="'{0:,.2f}'.format(line.price_unit)"/>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                          <t t-esc="'{0:,.2f}'.format(line.price_subtotal)"/>
-                        </td>
-                      </tr>
-                    </t>
-                  </tbody>
-                  <tfoot>
-                    <tr style="background: #f0f0f0; font-weight: bold;">
-                      <td colspan="4" style="padding: 8px; border: 1px solid #ddd; text-align: center;">إجمالي قيمة الاستثمار</td>
-                      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                        <t t-esc="'{0:,.2f}'.format(doc.amount_total)"/>
-                        <t t-if="doc.currency_id">
-                          <t t-esc="doc.currency_id.symbol or doc.currency_id.name"/>
-                        </t>
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </t>
-
-            <!-- جدول الدفعات / مراحل الصرف -->
-            <t t-if="doc.payment_schedule_ids">
-              <div class="mb-4">
-                <h4 style="margin-bottom: 10px;">جدول الدفعات / مراحل الصرف</h4>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-                  <thead>
-                    <tr style="background: #555; color: white;">
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">م</th>
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">المبلغ المستثمر</th>
-                      <th style="padding: 8px; border: 1px solid #999; text-align: center;">تاريخ الدفع</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <t t-foreach="doc.payment_schedule_ids" t-as="pay">
-                      <tr>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">
-                          <t t-esc="pay.installment_number"/>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                          <t t-esc="'{0:,.2f}'.format(pay.amount)"/>
-                          <t t-if="doc.currency_id">
-                            <t t-esc="doc.currency_id.symbol or doc.currency_id.name"/>
-                          </t>
-                        </td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                          <t t-esc="pay.due_date.strftime('%d/%m/%Y') if pay.due_date else ''"/>
-                        </td>
-                      </tr>
-                    </t>
-                  </tbody>
-                  <tfoot>
-                    <tr style="background: #f0f0f0; font-weight: bold;">
-                      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">الإجمالي</td>
-                      <td style="padding: 8px; border: 1px solid #ddd; text-align: center;" dir="ltr">
-                        <t t-esc="'{0:,.2f}'.format(doc.amount_total)"/>
-                        <t t-if="doc.currency_id">
-                          <t t-esc="doc.currency_id.symbol or doc.currency_id.name"/>
-                        </t>
-                      </td>
-                      <td style="padding: 8px; border: 1px solid #ddd;"></td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-            </t>
-
-            <!-- شروط وأحكام عقد الاستثمار -->
-            <div class="mb-4">
-              <h4 style="margin-bottom: 10px;">شروط وأحكام عقد الاستثمار</h4>
-              <div t-raw="doc.agreement_terms" style="line-height: 1.8;" dir="rtl"/>
-            </div>
-
-            <!-- التوقيعات (الشكل الاحترافي) -->
-            <div style="margin-top: 60px;">
-              <h4 style="margin-bottom: 30px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 8px;">التوقيعات</h4>
-
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-
-                  <!-- الطرف الأول (صاحب المشروع) -->
-                  <td style="width: 48%; text-align: center; padding: 10px;" dir="rtl" valign="top">
-                    <p style="font-weight: bold; margin-bottom: 40px; color: #333; font-size: 15px;">صاحب المشروع</p>
-
-                    <div style="min-height: 80px; display: flex; align-items: center; justify-content: center;">
-                      <t t-if="doc.first_party_signature">
-                        <img t-att-src="'data:image/png;base64,' + doc.first_party_signature.decode('utf-8')"
-                             style="max-height: 80px; max-width: 85%;"/>
-                      </t>
-                      <t t-else="">
-                        <div style="width: 80%; border-bottom: 1px solid #666;"></div>
-                      </t>
-                    </div>
-
-                    <hr style="border: none; border-top: 1px solid #333; margin-top: 10px; margin-bottom: 10px;"/>
-
-                    <p style="font-size: 13px; color: #333; font-weight: bold; margin: 0;">
-                      <span t-esc="doc.first_party_name"/>
-                    </p>
-                  </td>
-
-                  <!-- فاصل عمودي -->
-                  <td style="width: 4%; text-align: center;">
-                    <div style="height: 180px; border-left: 1px solid #ccc; margin: 0 auto;"></div>
-                  </td>
-
-                  <!-- الطرف الثاني (المستثمر) -->
-                  <td style="width: 48%; text-align: center; padding: 10px;" dir="rtl" valign="top">
-                    <p style="font-weight: bold; margin-bottom: 40px; color: #333; font-size: 15px;">المستثمر</p>
-
-                    <div style="min-height: 80px; display: flex; align-items: center; justify-content: center;">
-                      <t t-if="doc.second_party_signature">
-                        <img t-att-src="'data:image/png;base64,' + doc.second_party_signature.decode('utf-8')"
-                             style="max-height: 80px; max-width: 85%;"/>
-                      </t>
-                      <t t-else="">
-                        <div style="width: 80%; border-bottom: 1px solid #666;"></div>
-                      </t>
-                    </div>
-
-                    <hr style="border: none; border-top: 1px solid #333; margin-top: 10px; margin-bottom: 10px;"/>
-
-                    <p style="font-size: 13px; color: #333; font-weight: bold; margin: 0;">
-                      <span t-esc="doc.second_party_name"/>
-                    </p>
-                  </td>
-
-                </tr>
-              </table>
-            </div>
-
-            <!-- تذييل الصفحة -->
-            <div style="text-align: center; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px;" dir="ltr">
-              <p style="font-size: 10px; color: #999;">
-                <span t-esc="doc.name"/> | <span t-esc="doc.contract_date or ''"/>
-              </p>
-            </div>
-
           </div>
-
         </t>
       </t>
     </t>

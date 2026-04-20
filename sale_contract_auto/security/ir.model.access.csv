@@ -8,14 +8,4 @@ access_sale_contract_line_manager,sale.contract.line.manager,model_sale_contract
 access_sale_contract_line_account_manager,sale.contract.line.account.manager,model_sale_contract_line,account.group_account_manager,1,1,1,1
 access_contract_template_user,contract.template.user,model_contract_template,base.group_user,1,0,0,0
 access_contract_template_manager,contract.template.manager,model_contract_template,sales_team.group_sale_manager,1,1,1,1
-access_contract_clause_user,contract.clause.user,model_contract_clause,base.group_user,1,0,0,0
-access_contract_clause_manager,contract.clause.manager,model_contract_clause,sales_team.group_sale_manager,1,1,1,1
-access_sale_contract_title_user,sale.contract.title.user,model_sale_contract_title,base.group_user,1,0,0,0
-access_sale_contract_title_manager,sale.contract.title.manager,model_sale_contract_title,sales_team.group_sale_manager,1,1,1,1
-access_payment_schedule_user,payment.schedule.user,model_contract_payment_schedule,base.group_user,1,0,0,0
-access_payment_schedule_manager,payment.schedule.manager,model_contract_payment_schedule,sales_team.group_sale_manager,1,1,1,1
-access_payment_schedule_account_manager,payment.schedule.account.manager,model_contract_payment_schedule,account.group_account_manager,1,1,1,1
-access_contract_document_user,contract.document.user,model_contract_document,base.group_user,1,0,0,0
-access_contract_document_manager,contract.document.manager,model_contract_document,sales_team.group_sale_manager,1,1,1,1
-access_contract_amendment_user,contract.amendment.user,model_contract_amendment,base.group_user,1,0,0,0
-access_contract_amendment_manager,contract.amendment.manager,model_contract_amendment,sales_team.group_sale_manager,1,1,1,1
+access_sale_contract_title,sale.contract.title,model_sale_contract_title,,1,1,1,1

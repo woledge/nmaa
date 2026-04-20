@@ -1,44 +1,39 @@
-from odoo import models, fields, api
+from odoo import models, fields,api
 from odoo.exceptions import ValidationError
+
+
+
+
+class ContractTitle(models.Model):
+    _name = 'sale.contract.title'
+    _rec_name = "name"
+
+    name = fields.Char(string='Contract Title')
+
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     contract_count = fields.Integer(
-        string='Contract Count',
-        compute='_compute_contract_count',
-    )
-
-    contract_id = fields.Many2one(
-        'sale.contract',
-        string='Contract',
-        compute='_compute_contract',
-    )
-
+        string='Contract Count', compute='_compute_contract_count', tracking=True)
     contract_template_id = fields.Many2one(
-        'contract.template',
-        string='Contract Template',
-        tracking=True
-    )
-
-    contract_title_name = fields.Many2one(
-        'sale.contract.title',
-        string='Contract Title Name',
-        tracking=True
-    )
+        'contract.template', string='Contract Template', tracking=True)
+    contract_id = fields.Many2one(
+        'sale.contract', string='Contract', compute='_compute_contract', store=False, tracking=True)
+    contract_title_name = fields.Many2one( 'sale.contract.title',string="Contract Title Name")
 
     def _compute_contract_count(self):
         for order in self:
-            count = self.env['sale.contract'].search_count(
-                [('sale_order_id', '=', order.id)])
-            order.contract_count = count
+            contract = self.env['sale.contract'].search(
+                [('sale_order_id', '=', order.id)], limit=1)
+            order.contract_id = contract
 
     def _compute_contract(self):
         for order in self:
             contract = self.env['sale.contract'].search(
                 [('sale_order_id', '=', order.id)], limit=1)
-            order.contract_id = contract.id if contract else False
+            order.contract_id = contract
 
     def action_view_contract(self):
         self.ensure_one()
@@ -47,7 +42,7 @@ class SaleOrder(models.Model):
                 'type': 'ir.actions.act_window',
                 'name': 'Contract',
                 'res_model': 'sale.contract',
-                'view_mode': 'list,form',
+                'view_mode': 'form',
                 'res_id': self.contract_id.id,
                 'target': 'current',
             }
@@ -75,10 +70,12 @@ class SaleOrder(models.Model):
         return res
 
 
+
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
     card_id = fields.Char(string='Card ID')
+
 
     @api.constrains("card_id")
     def _check_code(self):

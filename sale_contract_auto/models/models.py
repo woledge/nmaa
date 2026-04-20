@@ -35,7 +35,7 @@ class SaleOrder(models.Model):
                 'type': 'ir.actions.act_window',
                 'name': 'Contract',
                 'res_model': 'sale.contract',
-                'view_mode': 'list',
+                'view_mode': 'form',
                 'res_id': self.contract_id.id,
                 'target': 'current',
             }
@@ -75,7 +75,7 @@ class SaleContract(models.Model):
     amount_total = fields.Monetary(string='Total Amount', tracking=True)
     currency_id = fields.Many2one('res.currency', string='Currency', required=True,
                                   default=lambda self: self.env.company.currency_id, tracking=True)
-    agreement_terms = fields.Text(string='Agreement Terms')
+    agreement_terms = fields.Text(string='Agreement Terms', tracking=True)
     contract_line_ids = fields.One2many('sale.contract.line', 'contract_id', string='Contract Lines', tracking=True)
     state = fields.Selection([
         ('draft', 'Draft'),

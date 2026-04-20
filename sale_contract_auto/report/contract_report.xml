@@ -4,7 +4,6 @@
 
     <record id="paperformat_sale_contract" model="report.paperformat">
         <field name="name">Sale Contract Paper</field>
-
         <field name="default" eval="False"/>
         <field name="format">A4</field>
         <field name="orientation">Portrait</field>
