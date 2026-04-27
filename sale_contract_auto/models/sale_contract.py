@@ -5,7 +5,7 @@ from datetime import datetime
 
 class SaleContract(models.Model):
     _name = 'sale.contract'
-    _description = 'Customer Sale Contract'
+    _description = 'Contract'
     _inherit = ['mail.thread', 'portal.mixin']
 
     name = fields.Char(
@@ -50,7 +50,7 @@ class SaleContract(models.Model):
     )
 
     agreement_terms = fields.Text(
-        string='Agreement Terms',
+        string='Terms and Conditions',
         tracking=True
     )
 
@@ -63,7 +63,7 @@ class SaleContract(models.Model):
 
     contract_title_name = fields.Many2one(
         'sale.contract.title',
-        string='Contract Title',
+        string='Document Title',
         tracking=True
     )
 
@@ -83,17 +83,17 @@ class SaleContract(models.Model):
     ], default='draft', tracking=True)
 
     first_party_name = fields.Char(
-        string='First Party',
+        string='First Party Name',
         default=lambda self: self.env.company.name
     )
 
     first_party_registry = fields.Char(
-        string='Company Registry',
+        string='First Party Registry',
         default=lambda self: self.env.company.company_registry
     )
 
     first_party_address = fields.Char(
-        string='Address',
+        string='First Party Address',
         default=lambda self: " - ".join(filter(None, [
             self.env.company.street,
             self.env.company.street2,
@@ -104,7 +104,7 @@ class SaleContract(models.Model):
     )
 
     second_party_name = fields.Char(
-        string='Second Party',
+        string='Second Party Name',
         related='partner_id.name',
         readonly=True
     )
@@ -115,7 +115,7 @@ class SaleContract(models.Model):
     )
 
     second_party_id_card = fields.Char(
-        string='ID Card',
+        string='Second Party ID',
         related='partner_id.card_id',
         readonly=True
     )
@@ -130,28 +130,28 @@ class SaleContract(models.Model):
 
     first_party_id = fields.Many2one(
         'res.partner',
-        string="First Party"
+        string="First Party Contact"
     )
 
     second_party_id = fields.Many2one(
         'res.partner',
-        string="Second Party"
+        string="Second Party Contact"
     )
 
     subtotal_total = fields.Monetary(
-        string='Subtotal Total',
+        string='Contract Subtotal',
         compute='_compute_subtotal_total',
         currency_field='currency_id',
         store=True,
     )
 
-    company_representative = fields.Char(string='Company Representative')
+    company_representative = fields.Char(string='Authorized Signatory')
 
     access_token = fields.Char(
         'Security Token',
         copy=False
     )
-    note = fields.Text()
+    note = fields.Text(string='Internal Notes')
 
     # -------------------------
     # ONCHANGE TEMPLATE

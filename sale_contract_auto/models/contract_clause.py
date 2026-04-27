@@ -3,7 +3,7 @@ from odoo import models, fields
 
 class ContractClause(models.Model):
     _name = 'contract.clause'
-    _description = 'Contract Clause Library'
+    _description = 'Contract Clause'
 
     name = fields.Char(
         string='Clause Title', required=True, tracking=True

@@ -4,7 +4,7 @@ from odoo.exceptions import UserError
 
 class ContractPaymentSchedule(models.Model):
     _name = 'contract.payment.schedule'
-    _description = 'Contract Payment Schedule'
+    _description = 'Contract Installment Schedule'
     _order = 'installment_number'
 
     contract_id = fields.Many2one(

@@ -3,7 +3,7 @@ from odoo import models, fields, api
 
 class ContractDocument(models.Model):
     _name = 'contract.document'
-    _description = 'Contract Document'
+    _description = 'Contract Supporting Document'
 
     contract_id = fields.Many2one(
         'sale.contract', string='Contract',

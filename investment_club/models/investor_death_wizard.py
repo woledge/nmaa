@@ -198,7 +198,6 @@ class InvestorDeathWizard(models.TransientModel):
                 'res_id': membership.id,
                 'type': 'binary',
                 'datas': self.inheritance_document,
-                'datas_fname': self.inheritance_document_name or 'inheritance_document.pdf',
                 'description': 'إعلام وراثة مرفق - حالة وفاة المستثمر',
             })
 
@@ -242,7 +241,6 @@ class InvestorDeathWizard(models.TransientModel):
                     'res_id': sub.id,
                     'type': 'binary',
                     'datas': self.inheritance_document,
-                    'datas_fname': self.inheritance_document_name or 'inheritance_document.pdf',
                     'description': 'إعلام وراثة مرفق - حالة وفاة المستثمر',
                 })
 
@@ -358,7 +356,6 @@ class InvestorDeathWizard(models.TransientModel):
                         'res_id': sub.id,
                         'type': 'binary',
                         'datas': self.inheritance_document,
-                        'datas_fname': self.inheritance_document_name or 'inheritance_document.pdf',
                         'description': 'إعلام وراثة مرفق - حالة وفاة المستثمر',
                     })
 

@@ -12,7 +12,7 @@ class SaleOrder(models.Model):
         'contract.template', string='Contract Template', tracking=True)
     contract_id = fields.Many2one(
         'sale.contract', string='Contract', compute='_compute_contract', store=False, tracking=True)
-    contract_title_name = fields.Many2one('sale.contract.title', string="Contract Title Name")
+    contract_title_name = fields.Many2one('sale.contract.title', string="Document Title")
 
     def _compute_contract_count(self):
         for order in self:
@@ -65,7 +65,7 @@ class SaleOrder(models.Model):
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    card_id = fields.Char(string='Card ID')
+    card_id = fields.Char(string='National ID')
 
 
     @api.constrains("card_id")
