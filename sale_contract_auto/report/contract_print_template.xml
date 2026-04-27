@@ -20,8 +20,8 @@
                     <p style="direction:rtl;">
                         <strong>تم الاتفاق بين كل من:</strong>
                         <br/>
-                        <span t-field="doc.first_party_name"/> <t t-if="doc.first_party_id.company_registry">
-                            سجل تجاري رقم (<span t-field="doc.first_party_id.first_party_registry"/>)
+                        <span t-field="doc.first_party_name"/> <t t-if="doc.first_party_registry">
+                            سجل تجاري رقم (<span t-field="doc.first_party_registry"/>)
                         </t>
 
                         <br/>

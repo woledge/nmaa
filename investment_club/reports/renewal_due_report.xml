@@ -8,4 +8,41 @@
         <field name="report_file">investment_club.renewal_due</field>
         <field name="print_report_name">'Renewal Due Report'</field>
     </record>
+
+    <template id="renewal_due">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <div class="page">
+                    <h2>Renewal Due Report</h2>
+                    <p>Generated: <span t-esc="date"/></p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Membership</th>
+                                <th>Investor</th>
+                                <th>Club</th>
+                                <th>Expiry Date</th>
+                                <th>Days Overdue</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="memberships" t-as="line">
+                                <td><span t-esc="line['membership_number']"/></td>
+                                <td><span t-esc="line['partner']"/></td>
+                                <td><span t-esc="line['club']"/></td>
+                                <td><span t-esc="line['expiry_date']"/></td>
+                                <td><span t-esc="line['days_overdue']"/></td>
+                                <td><span t-esc="line['due_amount']"/></td>
+                                <td><span t-esc="line['status']"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>Total Due:</strong> <span t-esc="total_due"/></p>
+                    <p><strong>Total Overdue:</strong> <span t-esc="total_overdue"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
 </odoo>

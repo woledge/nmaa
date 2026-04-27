@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ===== Security Groups ===== -->
-
-    <!-- Investment User -->
-    <record id="group_investment_user" model="res.groups">
-        <field name="name">Investment Club User</field>
-        <field name="category_id" ref="base.module_category_hidden"/>
-        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
-    </record>
-
-    <!-- Investment Manager -->
-    <record id="group_investment_manager" model="res.groups">
-        <field name="name">Investment Club Manager</field>
-        <field name="category_id" ref="base.module_category_hidden"/>
-        <field name="implied_ids" eval="[(4, ref('group_investment_user'))]"/>
-        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
-    </record>
-
-    <!-- ===== Access Rules ===== -->
+    <!-- ===== Access Rules - Loaded after models are installed ===== -->
 
     <!-- Project: Restrict creation to managers when setting is enabled -->
     <record id="investment_project_user_rule" model="ir.rule">

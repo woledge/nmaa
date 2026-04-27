@@ -40,10 +40,9 @@ This module allows you to:
 
         # Views
         'views/res_partner_view.xml',
-        # 'views/sale_contract_form.xml',
-        # 'views/views.xml',
         'views/sale_contract_views.xml',
         'views/contract_template_views.xml',
+        'views/templates.xml',
         # Reports
         'report/contract_report.xml',
         'report/contract_print_template.xml',

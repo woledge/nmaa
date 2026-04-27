@@ -11,4 +11,39 @@
         <field name="binding_model_id" ref="model_investment_project"/>
         <field name="binding_type">report</field>
     </record>
+
+    <template id="project_profit">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <div class="page">
+                    <h2>Project Profit and Loss</h2>
+                    <p>Generated: <span t-esc="date"/></p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Investors</th>
+                                <th>Total Revenue</th>
+                                <th>Annual Returns</th>
+                                <th>Actual Expenses</th>
+                                <th>Net Profit</th>
+                                <th>Profit Margin %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="projects" t-as="line">
+                                <td><span t-esc="line['name']"/></td>
+                                <td><span t-esc="line['investors']"/></td>
+                                <td><span t-esc="line['total_revenue']"/></td>
+                                <td><span t-esc="line['annual_returns']"/></td>
+                                <td><span t-esc="line['actual_expenses']"/></td>
+                                <td><span t-esc="line['net_profit']"/></td>
+                                <td><span t-esc="line['profit_margin']"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
 </odoo>

@@ -1,5 +1,6 @@
+# investment_club/models/investment_subscription.py
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -51,51 +52,100 @@ class InvestmentSubscription(models.Model):
 
     # ===== Project Return Settings (from project) =====
 
-    return_calculation_type = fields.Selection(
-        related='project_id.return_calculation_type',
-        string='Return Type',
+    # --- العائد الأول ---
+    return_1_amount = fields.Float(
+        related='project_id.return_1_amount',
+        string='Return 1 Amount',
+        readonly=True,
+        store=True
+    )
+    return_1_grace_months = fields.Integer(
+        related='project_id.return_1_grace_months',
+        string='Return 1 Grace (Months)',
+        readonly=True,
+        store=True
+    )
+    return_1_date = fields.Date(
+        related='project_id.return_1_date',
+        string='Return 1 Date',
         readonly=True,
         store=True
     )
 
+    # --- العائد الثاني ---
+    return_2_amount = fields.Float(
+        related='project_id.return_2_amount',
+        string='Return 2 Amount',
+        readonly=True,
+        store=True
+    )
+    return_2_percentage = fields.Float(
+        related='project_id.return_2_percentage',
+        string='Return 2 Percentage (%)',
+        readonly=True,
+        store=True
+    )
+    return_2_partner_share = fields.Char(
+        related='project_id.return_2_partner_share',
+        string='Partner Share Ratio',
+        readonly=True,
+        store=True
+    )
+    return_2_grace_months = fields.Integer(
+        related='project_id.return_2_grace_months',
+        string='Return 2 Grace (Months)',
+        readonly=True,
+        store=True
+    )
+    return_2_period_months = fields.Integer(
+        related='project_id.return_2_period_months',
+        string='Return 2 Period (Months)',
+        readonly=True,
+        store=True
+    )
+    return_2_duration_years = fields.Integer(
+        related='project_id.return_2_duration_years',
+        string='Return 2 Duration (Years)',
+        readonly=True,
+        store=True
+    )
+    return_2_first_date = fields.Date(
+        related='project_id.return_2_first_date',
+        string='Return 2 First Date',
+        readonly=True,
+        store=True
+    )
+    return_2_last_date = fields.Date(
+        related='project_id.return_2_last_date',
+        string='Return 2 Last Date',
+        readonly=True,
+        store=True
+    )
+
+    # --- إعدادات عامة ---
+    contract_start_date = fields.Date(
+        related='project_id.contract_start_date',
+        string='Contract Start Date',
+        readonly=True,
+        store=True
+    )
+    contract_end_date = fields.Date(
+        related='project_id.contract_end_date',
+        string='Contract End Date',
+        readonly=True,
+        store=True
+    )
+    max_shares_per_investor = fields.Integer(
+        related='project_id.max_shares_per_investor',
+        string='Max Shares per Investor',
+        readonly=True,
+        store=True
+    )
+
+    # --- الحقول القديمة (للتوافق) ---
     grace_period_months = fields.Integer(
         related='project_id.grace_period_months',
         string='Grace Period (Months)',
-        readonly=True,
-        store=True
-    )
-
-    grace_period_days = fields.Integer(
-        related='project_id.grace_period_days',
-        string='Grace Period (Days)',
-        readonly=True,
-        store=True
-    )
-
-    return_period_days = fields.Integer(
-        related='project_id.return_period_days',
-        string='Return Period (Days)',
-        readonly=True,
-        store=True
-    )
-
-    return_percentage = fields.Float(
-        related='project_id.return_percentage',
-        string='Return Percentage (%)',
-        readonly=True,
-        store=True
-    )
-
-    capital_return_period = fields.Integer(
-        related='project_id.capital_return_period',
-        string='Capital Return Period (Months)',
-        readonly=True,
-        store=True
-    )
-
-    fixed_return_amount = fields.Float(
-        related='project_id.fixed_return_amount',
-        string='Fixed Return Amount',
         readonly=True,
         store=True
     )
@@ -186,12 +236,23 @@ class InvestmentSubscription(models.Model):
     payment_journal_id = fields.Many2one(
         'account.journal',
         string='Payment Journal',
-        domain="[('type', 'in', ('bank', 'cash'))]"
+        domain="[('type', 'in', ('bank', 'cash'))]",
+        default=lambda self: self.env['account.journal'].search([
+            ('type', '=', 'bank'),
+            ('company_id', '=', self.env.company.id),
+        ], limit=1)
     )
 
     payment_id = fields.Many2one(
         'account.payment',
         string='Payment',
+        readonly=True,
+        copy=False
+    )
+
+    contract_id = fields.Many2one(
+        'sale.contract',
+        string='Contract',
         readonly=True,
         copy=False
     )
@@ -217,6 +278,7 @@ class InvestmentSubscription(models.Model):
         ('paid', 'Paid'),
         ('active', 'Active'),
         ('closed', 'Closed'),
+        ('terminated', 'Terminated'),
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', tracking=True)
 
@@ -260,9 +322,9 @@ class InvestmentSubscription(models.Model):
         for sub in self:
             sub.amount = sub.share_count * sub.share_value
 
-    @api.depends('investment_date', 'grace_period_months', 'grace_period_days',
-                 'return_period_days', 'return_percentage', 'return_calculation_type',
-                 'amount', 'capital_return_period', 'fixed_return_amount')
+    @api.depends('investment_date', 'return_1_grace_months', 'return_2_grace_months',
+                 'return_1_amount', 'return_2_amount', 'return_2_period_months',
+                 'return_2_percentage', 'share_count', 'amount', 'contract_end_date')
     def _compute_return_dates(self):
         for sub in self:
             if not sub.investment_date:
@@ -271,49 +333,23 @@ class InvestmentSubscription(models.Model):
                 sub.expected_period_return = 0.0
                 continue
 
-            # Returns start: investment date + grace months + grace days
-            grace_months = sub.grace_period_months or 0
-            grace_days = sub.grace_period_days or 0
-            sub.returns_start_date = (
-                sub.investment_date
-                + relativedelta(months=grace_months)
-                + timedelta(days=grace_days)
-            )
+            # Returns start: based on return_2_grace_months (main grace period)
+            grace_months = sub.return_2_grace_months or sub.grace_period_months or 0
+            sub.returns_start_date = sub.investment_date + relativedelta(months=grace_months)
 
-            # Capital return date
-            capital_months = sub.capital_return_period or 0
-            if capital_months > 0:
-                sub.capital_return_date = sub.investment_date + relativedelta(months=capital_months)
+            # Capital return date (contract end)
+            if sub.contract_end_date:
+                sub.capital_return_date = sub.contract_end_date
             else:
                 sub.capital_return_date = False
 
-            # Expected return per period based on calculation type
-            if sub.return_calculation_type == 'grace_period':
-                if sub.fixed_return_amount > 0:
-                    sub.expected_period_return = sub.fixed_return_amount
-                elif sub.return_percentage > 0:
-                    sub.expected_period_return = (sub.return_percentage / 100) * sub.amount / 12
-                else:
-                    sub.expected_period_return = 0
-
-            elif sub.return_calculation_type == 'fixed_monthly':
-                sub.expected_period_return = (sub.return_percentage / 100) * sub.amount / 12
-
-            elif sub.return_calculation_type == 'fixed_quarterly':
-                sub.expected_period_return = (sub.return_percentage / 100) * sub.amount / 4
-
-            elif sub.return_calculation_type == 'fixed_yearly':
-                sub.expected_period_return = (sub.return_percentage / 100) * sub.amount
-
-            elif sub.return_calculation_type == 'custom':
-                days = sub.return_period_days or 30
-                sub.expected_period_return = (sub.return_percentage / 100) * sub.amount * (days / 365)
-
-            elif sub.return_calculation_type == 'capital_plus_return':
-                sub.expected_period_return = sub.fixed_return_amount if sub.fixed_return_amount > 0 else 0
-
+            # Expected return per period (Return 2 amount)
+            if sub.return_2_amount > 0:
+                sub.expected_period_return = sub.return_2_amount * sub.share_count
+            elif sub.return_2_percentage > 0:
+                sub.expected_period_return = (sub.return_2_percentage / 100) * sub.amount
             else:
-                sub.expected_period_return = 0
+                sub.expected_period_return = 0.0
 
     @api.depends('returns_start_date', 'investment_date')
     def _compute_grace_period_status(self):
@@ -366,6 +402,15 @@ class InvestmentSubscription(models.Model):
         default['state'] = 'draft'
         return super().copy(default)
 
+    # ===== Validation =====
+    @api.constrains('share_count', 'max_shares_per_investor')
+    def _check_max_shares(self):
+        for sub in self:
+            if sub.max_shares_per_investor > 0 and sub.share_count > sub.max_shares_per_investor:
+                raise ValidationError(_(
+                    'Maximum shares per investor is %s! You selected %s shares.'
+                ) % (sub.max_shares_per_investor, sub.share_count))
+
     # ===== Actions =====
 
     def _get_config(self, key, default=False):
@@ -409,7 +454,6 @@ class InvestmentSubscription(models.Model):
         self.ensure_one()
         if self.state != 'pending_approval':
             raise UserError(_('Only pending investments can be rejected!'))
-        # Open wizard to enter rejection reason
         return {
             'type': 'ir.actions.act_window',
             'name': _('Reject Investment'),
@@ -422,7 +466,6 @@ class InvestmentSubscription(models.Model):
     def action_register_payment(self):
         self.ensure_one()
 
-        # If approval is required, check state
         if self._get_config('require_approval_for_investment', 'False') == 'True':
             if self.state not in ('approved', 'draft'):
                 raise UserError(_('Investment must be approved before payment!'))
@@ -434,6 +477,7 @@ class InvestmentSubscription(models.Model):
             'payment_type': 'inbound',
             'partner_type': 'customer',
             'partner_id': self.partner_id.id,
+            'investment_subscription_id': self.id,
             'journal_id': self.payment_journal_id.id,
             'amount': self.amount,
             'currency_id': self.currency_id.id,
@@ -463,32 +507,142 @@ class InvestmentSubscription(models.Model):
         if self.payment_state != 'paid':
             raise UserError(_('Investment must be paid first!'))
         self.write({'state': 'active'})
+        contract = self._get_or_create_sale_contract()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Contract'),
+            'res_model': 'sale.contract',
+            'res_id': contract.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_view_contract(self):
+        self.ensure_one()
+        contract = self._get_or_create_sale_contract()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Contract'),
+            'res_model': 'sale.contract',
+            'res_id': contract.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_view_payment(self):
+        self.ensure_one()
+        if not self.payment_id:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Payment'),
+            'res_model': 'account.payment',
+            'res_id': self.payment_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_print_contract(self):
+        self.ensure_one()
+        contract = self._get_or_create_sale_contract()
+        return contract.print_contract_report()
+
+    def _get_or_create_sale_contract(self):
+        self.ensure_one()
+        if self.contract_id:
+            return self.contract_id
+
+        contract_template = self.env['contract.template'].search([], limit=1)
+        contract_title = self.env['sale.contract.title'].search([], limit=1)
+        agreement_text = contract_template.content if contract_template else self._get_default_contract_terms()
+
+        contract = self.env['sale.contract'].create({
+            'partner_id': self.partner_id.id,
+            'contract_date': self.investment_date or fields.Date.today(),
+            'amount_total': self.amount,
+            'currency_id': self.currency_id.id,
+            'investment_subscription_id': self.id,
+            'contract_template_id': contract_template.id if contract_template else False,
+            'contract_title_name': contract_title.id if contract_title else False,
+            'agreement_terms': agreement_text,
+            'note': _('Generated automatically from investment %s.') % self.name,
+        })
+        self.contract_id = contract.id
+        return contract
+
+    def _get_default_contract_terms(self):
+        self.ensure_one()
+        return """
+            <p>This contract is generated automatically for the activated investment subscription.</p>
+            <p><strong>Club:</strong> %s</p>
+            <p><strong>Project:</strong> %s</p>
+            <p><strong>Investment Reference:</strong> %s</p>
+            <p><strong>Shares:</strong> %s</p>
+            <p><strong>Investment Amount:</strong> %s</p>
+            <p><strong>Contract Start Date:</strong> %s</p>
+            <p><strong>Contract End Date:</strong> %s</p>
+        """ % (
+            self.club_id.display_name or '',
+            self.project_id.display_name or '',
+            self.name or '',
+            self.share_count or 0,
+            self.amount or 0.0,
+            self.contract_start_date or '',
+            self.contract_end_date or '',
+        )
 
     def action_create_return(self):
-        """Create a return payment based on the actual return calculation type."""
+        """Create a return payment based on the unified return system."""
         self.ensure_one()
 
-        # ===== Validate subscription is active =====
         if self.state != 'active':
             raise UserError(_('Investment must be active to create returns!'))
 
         today = fields.Date.today()
 
-        # ===== Check grace period =====
+        # ===== Check Return 1 (One-time) =====
+        if self.return_1_amount > 0 and self.return_1_date:
+            # Check if Return 1 already exists (any state except cancelled)
+            return_1_exists = self.actual_return_ids.filtered(
+                lambda r: r.return_type == 'return_1' and r.state != 'cancelled'
+            )
+            if not return_1_exists and today >= self.return_1_date:
+                period_name = _('Return 1 - %s') % (self.return_1_date.strftime('%B %Y'))
+                return_payment = self.env['investment.actual.return'].create({
+                    'subscription_id': self.id,
+                    'return_type': 'return_1',
+                    'date_from': self.return_1_date,
+                    'date_to': self.return_1_date,
+                    'expected_amount': self.return_1_amount * self.share_count,
+                    'actual_amount': self.return_1_amount * self.share_count,
+                    'period_name': period_name,
+                    'state': 'draft',
+                })
+                return {
+                    'type': 'ir.actions.act_window',
+                    'name': _('Review Return 1 Payment'),
+                    'res_model': 'investment.actual.return',
+                    'res_id': return_payment.id,
+                    'view_mode': 'form',
+                    'target': 'current',
+                    'context': {'form_view_initial_mode': 'edit'},
+                }
+
+        # ===== Check grace period for Return 2 =====
         if not self.grace_period_passed:
             diff = relativedelta(self.returns_start_date, today)
             months_remaining = diff.months + (diff.years * 12)
             days_remaining = diff.days
 
             raise UserError(_(
-                'لم تنتهِ فترة السماح بعد!\n\n'
-                'فترة السماح: %s شهر\n'
+                'لم تنتهِ فترة السكون بعد!\n\n'
+                'فترة السكون: %s شهر\n'
                 'تاريخ الاستثمار: %s\n'
                 'تاريخ بدء العوائد: %s\n\n'
                 'المتبقي: %s شهر و %s يوم\n\n'
                 'ستكون العوائد متاحة بدءًا من: %s'
             ) % (
-                self.grace_period_months or 0,
+                self.return_2_grace_months or self.grace_period_months or 0,
                 self.investment_date,
                 self.returns_start_date,
                 months_remaining,
@@ -496,63 +650,57 @@ class InvestmentSubscription(models.Model):
                 self.returns_start_date.strftime('%Y-%m-%d') if self.returns_start_date else 'N/A'
             ))
 
-        # ===== Determine period start date =====
-        if self.actual_return_ids:
-            last_return = self.actual_return_ids.sorted('date_to', reverse=True)[0]
+        # ===== Determine period for Return 2 =====
+        return_2_returns = self.actual_return_ids.filtered(
+            lambda r: r.return_type == 'return_2' and r.state != 'cancelled'
+        )
+        if return_2_returns:
+            last_return = return_2_returns.sorted('date_to', reverse=True)[0]
             next_date_from = last_return.date_to + timedelta(days=1)
         else:
-            next_date_from = self.returns_start_date
+            next_date_from = self.return_2_first_date or self.returns_start_date
 
-        # ===== Validate return start date exists =====
         if not next_date_from:
             raise UserError(_(
                 'Could not determine return start date!\n'
                 'Please check the subscription settings.\n'
                 'Investment Date: %s\n'
                 'Grace Period: %s months'
-            ) % (self.investment_date, self.grace_period_months or 0))
+            ) % (self.investment_date, self.return_2_grace_months or self.grace_period_months or 0))
 
-        # ===== Cannot create future returns =====
         if next_date_from > today:
             raise UserError(_(
                 'The next return period starts on %s which is in the future!\n'
                 'Please wait until the period begins.'
             ) % next_date_from.strftime('%Y-%m-%d'))
 
-        # ===== Calculate period end date based on return type =====
-        if self.return_calculation_type == 'fixed_monthly':
-            next_date_to = next_date_from + relativedelta(months=1, days=-1)
-        elif self.return_calculation_type == 'fixed_quarterly':
-            next_date_to = next_date_from + relativedelta(months=3, days=-1)
-        elif self.return_calculation_type == 'fixed_yearly':
-            next_date_to = next_date_from + relativedelta(years=1, days=-1)
-        elif self.return_calculation_type == 'custom':
-            days = self.return_period_days or 30
-            next_date_to = next_date_from + timedelta(days=days - 1)
-        else:
-            # Default to monthly for grace_period, capital_plus_return, etc.
-            next_date_to = next_date_from + relativedelta(months=1, days=-1)
+        # Check if past last return date
+        if self.return_2_last_date and next_date_from > self.return_2_last_date:
+            raise UserError(_(
+                'All return payments have been completed!\n'
+                'Last return date was: %s'
+            ) % self.return_2_last_date.strftime('%Y-%m-%d'))
 
-        # ===== Calculate expected amount based on return type =====
-        if self.return_calculation_type in ('grace_period', 'capital_plus_return'):
-            expected_amount = (
-                self.fixed_return_amount
-                if self.fixed_return_amount > 0
-                else self.expected_period_return
-            )
-        else:
-            expected_amount = self.expected_period_return
+        # Calculate period end
+        period_months = self.return_2_period_months or 1
+        next_date_to = next_date_from + relativedelta(months=period_months, days=-1)
 
-        # ===== Period name =====
+        # Check if period exceeds last date
+        if self.return_2_last_date and next_date_to > self.return_2_last_date:
+            next_date_to = self.return_2_last_date
+
+        # Calculate expected amount
+        expected_amount = self.expected_period_return or 0.0
+
         period_name = '%s / %s' % (
             next_date_from.strftime('%B %Y'),
             self.partner_id.name or 'Unknown'
         )
 
-        # ===== Create return record =====
         try:
             return_payment = self.env['investment.actual.return'].create({
                 'subscription_id': self.id,
+                'return_type': 'return_2',
                 'date_from': next_date_from,
                 'date_to': next_date_to,
                 'expected_amount': expected_amount,
@@ -565,7 +713,6 @@ class InvestmentSubscription(models.Model):
                 'Failed to create return record:\n%s'
             ) % str(e))
 
-        # ===== Open the return form =====
         return {
             'type': 'ir.actions.act_window',
             'name': _('Review Return Payment'),
@@ -580,6 +727,39 @@ class InvestmentSubscription(models.Model):
 
     def action_close(self):
         self.write({'state': 'closed'})
+
+    def action_terminate(self):
+        """Open investment subscription termination wizard."""
+        self.ensure_one()
+        if self.state not in ('paid', 'active'):
+            raise UserError(_('Only paid or active investments can be terminated!'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Terminate Investment Share'),
+            'res_model': 'subscription.terminate.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_subscription_id': self.id,
+            },
+        }
+
+    def action_death_case(self):
+        """Open investor death case wizard for this subscription."""
+        self.ensure_one()
+        if self.state not in ('paid', 'active'):
+            raise UserError(_('Only paid or active investments can process death case!'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Investor Death Case'),
+            'res_model': 'investor.death.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_membership_id': self.membership_id.id,
+                'default_subscription_id': self.id,
+            },
+        }
 
     def action_cancel(self):
         if self.payment_id and self.payment_id.state == 'posted':

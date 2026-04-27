@@ -19,8 +19,9 @@
                 <field name="amount_total"/>
                 <field name="state" widget="badge"
                    decoration-primary="state == 'draft'"
-                   decoration-success="state == 'active'"
-                   decoration-warning="state == 'finished'"
+                   decoration-success="state in ('legal_approved', 'finished')"
+                   decoration-info="state == 'confirmed'"
+                   decoration-warning="state == 'financial_approved'"
                    decoration-danger="state == 'cancelled'"/>
             </list>
         </field>
@@ -37,8 +38,8 @@
 
                     <field name="state"
                            widget="statusbar"
-                           statusbar_visible="draft,active,finished"
-                           statusbar_colors="{'draft':'blue','active':'green','finished':'orange','cancelled':'red'}"/>
+                           statusbar_visible="draft,confirmed,financial_approved,legal_approved,finished,cancelled"
+                           statusbar_colors="{'draft':'blue','confirmed':'info','financial_approved':'warning','legal_approved':'success','finished':'orange','cancelled':'red'}"/>
 
                     <button name="action_set_active"
                             string="Confirm"
@@ -68,7 +69,7 @@
                         string="Reset to Draft"
                         type="object"
                         class="btn-danger"
-                        invisible="state not in 'confirmed,financial_approved,legal_approved,finished'" />
+                        invisible="state not in ['confirmed', 'financial_approved', 'legal_approved', 'finished', 'cancelled']" />
 
                     <button name="print_contract_report"
                             type="object"

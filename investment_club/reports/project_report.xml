@@ -11,4 +11,41 @@
         <field name="binding_model_id" ref="model_investment_project"/>
         <field name="binding_type">report</field>
     </record>
+
+    <template id="project_summary">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <div class="page">
+                    <h2>Project Summary</h2>
+                    <p>Date: <span t-esc="date"/></p>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Club</th>
+                                <th>Investors</th>
+                                <th>Total Invested</th>
+                                <th>Period Return</th>
+                                <th>Annual Return</th>
+                                <th>ROI %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="data" t-as="line">
+                                <td><span t-esc="line['name']"/></td>
+                                <td><span t-esc="line['club']"/></td>
+                                <td><span t-esc="line['actual_investors']"/></td>
+                                <td><span t-esc="line['total_invested']"/></td>
+                                <td><span t-esc="line['period_return']"/></td>
+                                <td><span t-esc="line['annual_return']"/></td>
+                                <td><span t-esc="line['roi']"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>Total Invested:</strong> <span t-esc="grand_total['invested']"/></p>
+                    <p><strong>Total Investors:</strong> <span t-esc="grand_total['investors']"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
 </odoo>

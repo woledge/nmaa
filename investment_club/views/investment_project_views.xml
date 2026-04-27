@@ -10,7 +10,8 @@
                 <field name="club_id"/>
                 <field name="analytic_account_id"/>
                 <field name="share_value"/>
-                <field name="return_calculation_type"/>
+                <field name="contract_start_date"/>
+                <field name="contract_end_date"/>
                 <field name="state"/>
             </list>
         </field>
@@ -43,21 +44,45 @@
                         </group>
                         <group>
                             <field name="share_value"/>
+                            <field name="max_shares_per_investor"/>
                         </group>
                     </group>
                     
-                    <!-- إعدادات العوائد -->
-                    <group string="Return Configuration">
+                    <!-- إعدادات العقد -->
+                    <group string="Contract Settings">
                         <group>
-                            <field name="return_calculation_type"/>
-                            <!-- ⚠️ أضفنا grace_period_months -->
-                            <field name="grace_period_months" invisible="return_calculation_type not in ('grace_period', 'capital_plus_return')"/>
-                            <field name="return_period_days" invisible="return_calculation_type != 'custom'"/>
-                            <field name="return_percentage"/>
+                            <field name="contract_start_date"/>
+                            <field name="contract_end_date"/>
                         </group>
                         <group>
-                            <field name="capital_return_period"/>
-                            <field name="fixed_return_amount"/>
+                            <field name="grace_period_months"/>
+                        </group>
+                    </group>
+                    
+                    <!-- العائد الأول (مرة واحدة) -->
+                    <group string="Return 1 (One-time)">
+                        <group>
+                            <field name="return_1_amount"/>
+                            <field name="return_1_grace_months"/>
+                        </group>
+                        <group>
+                            <field name="return_1_date"/>
+                        </group>
+                    </group>
+                    
+                    <!-- العائد الثاني (متكرر) -->
+                    <group string="Return 2 (Recurring)">
+                        <group>
+                            <field name="return_2_amount"/>
+                            <field name="return_2_percentage"/>
+                            <field name="return_2_partner_share"/>
+                            <field name="return_2_grace_months"/>
+                        </group>
+                        <group>
+                            <field name="return_2_period_months"/>
+                            <field name="return_2_duration_years"/>
+                            <field name="return_2_first_date"/>
+                            <field name="return_2_last_date"/>
                         </group>
                     </group>
                     
@@ -95,6 +120,5 @@
         <field name="res_model">investment.project</field>
         <field name="view_mode">list,form</field>
     </record>
-
 
 </odoo>

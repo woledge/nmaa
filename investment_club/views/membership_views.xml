@@ -49,6 +49,16 @@
                             invisible="state != 'active'"
                             class="btn-primary"/>
                     
+                    <button name="action_terminate" type="object" 
+                            string="Terminate Membership" 
+                            invisible="state not in ('active', 'initial_invoiced')"
+                            class="btn-danger"/>
+                    
+                    <button name="action_death_case" type="object" 
+                            string="Death Case / حالة وفاة" 
+                            invisible="state not in ('active', 'initial_invoiced')"
+                            class="btn-secondary" icon="fa-heartbeat"/>
+                    
                     <button name="action_cancel" type="object" 
                             string="Cancel" 
                             invisible="state in ('cancelled')"
@@ -66,24 +76,23 @@
                 
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button type="object" name="action_open_invoice" class="oe_stat_button" icon="fa-file-text-o">
+                        <button type="object" name="action_open_invoice" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="invoice_count == 0">
                             <field name="invoice_count" widget="statinfo" string="Invoice"/>
                         </button>
-                        <button type="object" name="action_open_investment" class="oe_stat_button">
+                        <button type="object" name="action_open_investment" class="oe_stat_button" icon="fa-line-chart"
+                                invisible="investment_count == 0">
                             <field name="investment_count" widget="statinfo" string="Investment"/>
                         </button>
                     </div>
-                    <!-- العنوان الرئيسي - Internal Ref -->
                     <div class="oe_title">
                         <h1>
                             <field name="membership_number" readonly="1"/>
                         </h1>
-                        <!-- شيلنا h2 لأن مفيش حقل name في الموديل -->
                     </div>
                     
                     <group>
                         <group string="Customer &amp; Club">
-                            <!-- كود العضوية فوق -->
                             <field name="partner_id"/>
                             <field name="investor_code"/>
                             <field name="club_id"/>

@@ -86,28 +86,30 @@ class InvestmentContact(models.Model):
     # =============================================
     def write(self, vals):
         for record in self:
+            local_vals = vals.copy()
             # --- الموظف ---
-            if 'employee_code_check' in vals:
-                if vals['employee_code_check'] and not record.employee_code:
-                    vals['employee_code'] = self.env['ir.sequence'].next_by_code('employee.code') or _('New')
-                elif not vals['employee_code_check'] and record.employee_code:
-                    vals['employee_code'] = False  # ← شيل الكود
+            if 'employee_code_check' in local_vals:
+                if local_vals['employee_code_check'] and not record.employee_code:
+                    local_vals['employee_code'] = self.env['ir.sequence'].next_by_code('employee.code') or _('New')
+                elif not local_vals['employee_code_check'] and record.employee_code:
+                    local_vals['employee_code'] = False  # ← شيل الكود
 
             # --- العميل ---
-            if 'customer_code_check' in vals:
-                if vals['customer_code_check'] and not record.customer_code:
-                    vals['customer_code'] = self.env['ir.sequence'].next_by_code('customer.code') or _('New')
-                elif not vals['customer_code_check'] and record.customer_code:
-                    vals['customer_code'] = False
+            if 'customer_code_check' in local_vals:
+                if local_vals['customer_code_check'] and not record.customer_code:
+                    local_vals['customer_code'] = self.env['ir.sequence'].next_by_code('customer.code') or _('New')
+                elif not local_vals['customer_code_check'] and record.customer_code:
+                    local_vals['customer_code'] = False
 
             # --- المورد ---
-            if 'vendor_code_check' in vals:
-                if vals['vendor_code_check'] and not record.vendor_code:
-                    vals['vendor_code'] = self.env['ir.sequence'].next_by_code('vendor.code') or _('New')
-                elif not vals['vendor_code_check'] and record.vendor_code:
-                    vals['vendor_code'] = False
+            if 'vendor_code_check' in local_vals:
+                if local_vals['vendor_code_check'] and not record.vendor_code:
+                    local_vals['vendor_code'] = self.env['ir.sequence'].next_by_code('vendor.code') or _('New')
+                elif not local_vals['vendor_code_check'] and record.vendor_code:
+                    local_vals['vendor_code'] = False
 
-        return super().write(vals)
+            super(InvestmentContact, record).write(local_vals)
+        return True
 
     _sql_constraints = [
         ('employee_code_unique', 'UNIQUE(employee_code)', 'Employee Code must be unique!'),

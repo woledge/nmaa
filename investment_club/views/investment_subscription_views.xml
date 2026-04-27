@@ -9,7 +9,6 @@
                 <field name="name" optional="hide"/>
                 <field name="partner_id"/>
                 <field name="project_id"/>
-                <field name="return_calculation_type"/>
                 <field name="investment_date"/>
                 <field name="returns_start_date"/>
                 <field name="grace_period_passed" invisible="1"/>
@@ -39,7 +38,7 @@
                             string="Activate Investment" 
                             invisible="state != 'paid'"
                             class="btn-success"/>
-                    
+
                     <button name="action_create_return" type="object" 
                             string="Create Return Payment" 
                             invisible="state != 'active'"
@@ -50,6 +49,16 @@
                             invisible="state != 'active'"
                             class="btn-secondary"/>
                     
+                    <button name="action_terminate" type="object" 
+                            string="Terminate Share" 
+                            invisible="state not in ('paid', 'active')"
+                            class="btn-danger"/>
+                    
+                    <button name="action_death_case" type="object" 
+                            string="Death Case / حالة وفاة" 
+                            invisible="state not in ('paid', 'active')"
+                            class="btn-secondary" icon="fa-heartbeat"/>
+                    
                     <button name="action_cancel" type="object" 
                             string="Cancel" 
                             invisible="state in ('closed', 'cancelled')"
@@ -58,7 +67,6 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 
-                <!-- ⚠️ تنبيه فترة السكون بالشهور -->
                 <div class="alert alert-info" role="alert" invisible="grace_period_passed == True or state != 'active'">
                     <strong>Grace Period Active!</strong> 
                     Returns will start on <field name="returns_start_date"/> 
@@ -71,8 +79,28 @@
                 </div>
                 
                 <sheet>
-                    <div class="oe_title">
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_payment"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-money"
+                                invisible="not payment_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">View Payment</span>
+                            </div>
+                        </button>
+                        <button name="action_view_contract"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not contract_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">View Contract</span>
+                            </div>
+                        </button>
+                    </div>
 
+                    <div class="oe_title">
                         <h3 class="text-muted">
                             Ref: <field name="name" readonly="1"/>
                         </h3>
@@ -87,12 +115,30 @@
                             <field name="investment_date"/>
                         </group>
                         
-                        <group string="Return Schedule (from Project)">
-                            <field name="return_calculation_type" readonly="1"/>
+                        <group string="Contract Settings (from Project)">
+                            <field name="contract_start_date" readonly="1"/>
+                            <field name="contract_end_date" readonly="1"/>
+                            <field name="max_shares_per_investor" readonly="1"/>
                             <field name="grace_period_months" readonly="1"/>
-                            <field name="returns_start_date" readonly="1"/>
-                            <field name="grace_period_passed" readonly="1"/>
-                            <field name="months_until_returns_start" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <group string="Return 1 (One-time)">
+                            <field name="return_1_amount" readonly="1"/>
+                            <field name="return_1_grace_months" readonly="1"/>
+                            <field name="return_1_date" readonly="1"/>
+                        </group>
+                        
+                        <group string="Return 2 (Recurring)">
+                            <field name="return_2_amount" readonly="1"/>
+                            <field name="return_2_percentage" readonly="1"/>
+                            <field name="return_2_partner_share" readonly="1"/>
+                            <field name="return_2_grace_months" readonly="1"/>
+                            <field name="return_2_period_months" readonly="1"/>
+                            <field name="return_2_duration_years" readonly="1"/>
+                            <field name="return_2_first_date" readonly="1"/>
+                            <field name="return_2_last_date" readonly="1"/>
                         </group>
                     </group>
                     
@@ -101,7 +147,6 @@
                             <field name="share_count"/>
                             <field name="share_value"/>
                             <field name="amount"/>
-                            <field name="return_percentage" readonly="1"/>
                             <field name="expected_period_return"/>
                         </group>
                         
@@ -112,11 +157,12 @@
                         </group>
                     </group>
                     
-                    <group string="Payment">
+                        <group string="Payment">
                         <group>
                             <field name="payment_journal_id" invisible="state != 'draft'"/>
                             <field name="payment_id" readonly="1"/>
                             <field name="payment_state" widget="badge"/>
+                            <field name="contract_id" readonly="1"/>
                         </group>
                     </group>
                     
@@ -124,6 +170,7 @@
                         <page string="Actual Returns History">
                             <field name="actual_return_ids">
                                 <list>
+                                    <field name="return_type"/>
                                     <field name="period_name"/>
                                     <field name="date_from"/>
                                     <field name="date_to"/>
@@ -160,7 +207,6 @@
                 <filter string="In Grace Period" name="in_grace" domain="[('grace_period_passed', '=', False)]"/>
                 <group expand="0" string="Group By">
                     <filter string="Project" name="project" context="{'group_by': 'project_id'}"/>
-                    <filter string="Return Type" name="return_type" context="{'group_by': 'return_calculation_type'}"/>
                 </group>
             </search>
         </field>
@@ -173,6 +219,4 @@
         <field name="view_mode">list,form</field>
         <field name="search_view_id" ref="view_investment_subscription_search"/>
     </record>
-
-    <!-- Menu -->
 </odoo>

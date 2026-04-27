@@ -1,14 +1,5 @@
-from odoo import models, fields,api
+from odoo import fields, models, api
 from odoo.exceptions import ValidationError
-
-
-
-
-class ContractTitle(models.Model):
-    _name = 'sale.contract.title'
-    _rec_name = "name"
-
-    name = fields.Char(string='Contract Title')
 
 
 
@@ -21,13 +12,13 @@ class SaleOrder(models.Model):
         'contract.template', string='Contract Template', tracking=True)
     contract_id = fields.Many2one(
         'sale.contract', string='Contract', compute='_compute_contract', store=False, tracking=True)
-    contract_title_name = fields.Many2one( 'sale.contract.title',string="Contract Title Name")
+    contract_title_name = fields.Many2one('sale.contract.title', string="Contract Title Name")
 
     def _compute_contract_count(self):
         for order in self:
             contract = self.env['sale.contract'].search(
                 [('sale_order_id', '=', order.id)], limit=1)
-            order.contract_id = contract
+            order.contract_count = 1 if contract else 0
 
     def _compute_contract(self):
         for order in self:

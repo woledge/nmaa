@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- ويزارد فسخ عقد العضوية                        -->
+    <!-- ============================================ -->
+
+    <record id="membership_terminate_wizard_form" model="ir.ui.view">
+        <field name="name">membership.terminate.wizard.form</field>
+        <field name="model">membership.terminate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Terminate Membership">
+                <group>
+                    <field name="membership_id" invisible="1"/>
+                    <field name="partner_id"/>
+                    <field name="investor_code"/>
+                    <field name="club_id"/>
+                    <field name="membership_date"/>
+                </group>
+
+                <group string="Financial Details">
+                    <group>
+                        <field name="original_paid_fee"/>
+                        <field name="current_fee"/>
+                        <field name="increase_amount" invisible="is_first_3_months"/>
+                    </group>
+                    <group>
+                        <field name="months_elapsed"/>
+                        <field name="is_first_3_months"/>
+                    </group>
+                </group>
+
+                <!-- تنبيه حالة أول 3 شهور -->
+                <div class="alert alert-warning" role="alert" invisible="not is_first_3_months">
+                    <strong>تنبيه:</strong> الفسخ خلال أول 3 شهور يتم خصم مبلغ 6,500 جنيه من قيمة العضوية.
+                    <br/>يأخذ العميل أصل مبلغ العضوية بعد خصم 6,500 جنيه.
+                    <br/>مبلغ الخصم يتحول لإيراد للشركة.
+                </div>
+
+                <!-- تنبيه حالة وجود زيادة (بعد 3 شهور) -->
+                <div class="alert alert-info" role="alert" invisible="increase_amount &lt;= 0 or is_first_3_months">
+                    <strong>يوجد زيادة في قيمة العضوية!</strong>
+                    <br/>يأخذ العميل أصل مبلغ العضوية + 70% من قيمة الزيادة.
+                    <br/>الشركة تحصل على 30% من قيمة الزيادة كإيراد.
+                </div>
+
+                <!-- تنبيه حالة بعد 3 شهور بدون زيادة -->
+                <div class="alert alert-info" role="alert" invisible="is_first_3_months or increase_amount &gt; 0">
+                    <strong>لا توجد زيادة في قيمة العضوية.</strong>
+                    <br/>يأخذ العميل أصل مبلغ العضوية كاملاً.
+                </div>
+
+                <group string="Termination Calculation">
+                    <group>
+                        <!-- حالة أول 3 شهور -->
+                        <field name="deduction_amount" invisible="not is_first_3_months"/>
+                        <field name="actual_deduction" invisible="not is_first_3_months"/>
+
+                        <!-- حالة بعد 3 شهور وفيه زيادة -->
+                        <field name="client_share_increase" invisible="increase_amount &lt;= 0 or is_first_3_months"/>
+                        <field name="company_share_increase" invisible="increase_amount &lt;= 0 or is_first_3_months"/>
+                    </group>
+                    <group>
+                        <field name="company_income"
+                               decoration-success="company_income &gt; 0"
+                               widget="monetary"/>
+                        <field name="refund_amount"
+                               decoration-danger="refund_amount &lt;= 0"
+                               decoration-success="refund_amount &gt; 0"
+                               widget="monetary"/>
+                    </group>
+                </group>
+
+                <!-- ملخص التوزيع (بعد 3 شهور وفيه زيادة) -->
+                <group string="Distribution Summary" invisible="is_first_3_months or increase_amount &lt;= 0">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr class="bg-info text-white">
+                                        <th>البيان</th>
+                                        <th>العميل (70%)</th>
+                                        <th>الشركة (30%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><b>أصل المبلغ المدفوع</b></td>
+                                        <td><field name="original_paid_fee" nolabel="1" readonly="1"/></td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr class="bg-light">
+                                        <td><b>قيمة الزيادة</b></td>
+                                        <td><field name="client_share_increase" nolabel="1" readonly="1"/></td>
+                                        <td><field name="company_share_increase" nolabel="1" readonly="1"/></td>
+                                    </tr>
+                                    <tr class="bg-success text-white">
+                                        <td><b>الإجمالي</b></td>
+                                        <td><b><field name="refund_amount" nolabel="1" readonly="1"/></b></td>
+                                        <td><b><field name="company_income" nolabel="1" readonly="1"/></b></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </group>
+
+                <group string="Refund Payment">
+                    <field name="refund_journal_id"/>
+                </group>
+
+                <group string="Reason">
+                    <field name="reason" placeholder="سبب الفسخ..."/>
+                    <field name="notes" placeholder="ملاحظات إضافية..."/>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_termination" type="object"
+                            string="Confirm Termination" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- ويزارد فسخ عقد الحصة الاستثمارية                -->
+    <!-- ============================================ -->
+
+    <record id="subscription_terminate_wizard_form" model="ir.ui.view">
+        <field name="name">subscription.terminate.wizard.form</field>
+        <field name="model">subscription.terminate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Terminate Investment Share">
+                <group>
+                    <field name="subscription_id" invisible="1"/>
+                    <field name="partner_id"/>
+                    <field name="investor_code"/>
+                    <field name="project_id"/>
+                    <field name="membership_date"/>
+                    <field name="investment_date"/>
+                </group>
+
+                <group string="Investment Details">
+                    <group>
+                        <field name="share_count"/>
+                        <field name="share_value"/>
+                        <field name="total_amount"/>
+                    </group>
+                    <group>
+                        <field name="total_returns_paid"/>
+                        <field name="membership_months_elapsed"/>
+                        <field name="is_first_3_months"/>
+                    </group>
+                </group>
+
+                <!-- تنبيه -->
+                <div class="alert alert-warning" role="alert" invisible="is_first_3_months">
+                    <strong>تنبيه:</strong> يمكن فقط فسخ الحصة الاستثمارية خلال أول 3 شهور من العضوية!
+                </div>
+
+                <div class="alert alert-success" role="alert" invisible="not is_first_3_months">
+                    <strong>يمكن الفسخ:</strong> خلال أول 3 شهور من العضوية، يحصل المستثمر على أصل قيمة الحصة المسددة.
+                </div>
+
+                <group string="Termination Calculation">
+                    <group>
+                        <field name="refund_amount"
+                               decoration-danger="refund_amount &lt;= 0"
+                               decoration-success="refund_amount &gt; 0"
+                               widget="monetary"/>
+                    </group>
+                </group>
+
+                <group string="Refund Payment">
+                    <field name="refund_journal_id"/>
+                </group>
+
+                <group string="Reason">
+                    <field name="reason" placeholder="سبب الفسخ..."/>
+                    <field name="notes" placeholder="ملاحظات إضافية..."/>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_termination" type="object"
+                            string="Confirm Termination" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- ويزارد حالة وفاة المستثمر                    -->
+    <!-- ============================================ -->
+
+    <record id="investor_death_wizard_form" model="ir.ui.view">
+        <field name="name">investor.death.wizard.form</field>
+        <field name="model">investor.death.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Investor Death Case">
+                <!-- تنبيه علوي -->
+                <div class="alert alert-danger" role="alert">
+                    <strong>حالة وفاة المستثمر</strong><br/>
+                    يرجى إرفاق إعلام الوراثة واختيار الإجراء المطلوب:<br/>
+                    <b>نقل الملكية:</b> نقل ملكية العضوية/الحصة للوريث المفوض من قبل الورثة<br/>
+                    <b>فسخ وتوزيع:</b> فسخ العقد وتوزيع قيمة الحصة طبقا لإعلام الوراثة
+                </div>
+
+                <group>
+                    <field name="membership_id" invisible="1"/>
+                    <field name="subscription_id" invisible="1"/>
+                    <field name="partner_id"/>
+                    <field name="investor_code"/>
+                    <field name="club_id"/>
+                    <field name="membership_date"/>
+                </group>
+
+                <group string="Death Information / معلومات الوفاة">
+                    <group>
+                        <field name="death_date"/>
+                        <field name="inheritance_document" filename="inheritance_document_name"/>
+                        <field name="inheritance_document_name"/>
+                    </group>
+                    <group>
+                        <field name="action_type" widget="radio"/>
+                    </group>
+                </group>
+
+                <!-- ===== Case 1: Transfer Ownership ===== -->
+                <div class="alert alert-info" role="alert" invisible="action_type != 'transfer'">
+                    <strong>نقل الملكية:</strong> سيتم نقل ملكية العضوية وجميع الحصص الاستثمارية النشطة إلى الوريث المفوض.
+                </div>
+
+                <group string="Transfer Details / تفاصيل نقل الملكية" invisible="action_type != 'transfer'">
+                    <group>
+                        <field name="new_partner_id"
+                               domain="[('is_company', '=', False)]"
+                               placeholder="اختر الوريث المفوض..."/>
+                    </group>
+                    <group>
+                        <field name="new_investor_code"/>
+                    </group>
+                </group>
+
+                <!-- ===== Case 2: Terminate & Distribute ===== -->
+                <div class="alert alert-warning" role="alert" invisible="action_type != 'terminate'">
+                    <strong>فسخ وتوزيع:</strong> سيتم فسخ العقد واسترداد أصل قيمة الحصة/العضوية المسددة (بدون خصومات). يتم التوزيع على الورثة طبقا لإعلام الوراثة.
+                </div>
+
+                <group string="Investment Details / تفاصيل الاستثمار" invisible="action_type != 'terminate'">
+                    <group>
+                        <!-- Details for subscription -->
+                        <field name="subscription_project" invisible="not subscription_id"/>
+                        <field name="subscription_total" invisible="not subscription_id" widget="monetary"/>
+                        <!-- Details for membership -->
+                        <field name="membership_original_paid" invisible="subscription_id" widget="monetary"/>
+                    </group>
+                    <group>
+                        <field name="refund_amount"
+                               decoration-success="refund_amount &gt; 0"
+                               widget="monetary"/>
+                    </group>
+                </group>
+
+                <group string="Refund Payment" invisible="action_type != 'terminate'">
+                    <field name="refund_journal_id"/>
+                </group>
+
+                <group string="Notes / ملاحظات">
+                    <field name="notes" placeholder="ملاحظات إضافية..." nolabel="1"/>
+                </group>
+
+                <footer>
+                    <button name="action_confirm_death_case" type="object"
+                            string="Confirm Death Case" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

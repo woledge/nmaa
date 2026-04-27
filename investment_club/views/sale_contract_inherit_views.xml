@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_contract_form_inherit_investment" model="ir.ui.view">
+        <field name="name">sale.contract.form.inherit.investment</field>
+        <field name="model">sale.contract</field>
+        <field name="inherit_id" ref="sale_contract_auto.view_sale_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_investment_subscription"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-arrow-circle-left"
+                            invisible="not investment_subscription_id">
+                        <div class="o_stat_info">
+                            <span class="o_stat_text">Back To Investment</span>
+                        </div>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

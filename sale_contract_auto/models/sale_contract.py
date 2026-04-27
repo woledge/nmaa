@@ -78,7 +78,8 @@ class SaleContract(models.Model):
         ('confirmed', 'Confirmed'),
         ('financial_approved', 'Financial Approved'),
         ('legal_approved', 'Legal Approved'),
-        ('finished', 'Finished')
+        ('finished', 'Finished'),
+        ('cancelled', 'Cancelled'),
     ], default='draft', tracking=True)
 
     first_party_name = fields.Char(

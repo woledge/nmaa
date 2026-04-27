@@ -38,17 +38,21 @@ class InvestmentActualReturn(models.Model):
         if not subscription or not subscription.partner_id:
             return
 
-        subject = _('Return Payment: %s') % (ret.period_name or ret.date_from)
+        return_type_label = dict(ret._fields['return_type'].selection).get(ret.return_type, ret.return_type)
+
+        subject = _('Return Payment: %s (%s)') % (ret.period_name or ret.date_from, return_type_label)
         body = _(
             '<p>Dear <b>%s</b>,</p>'
             '<p>A return payment has been processed for your investment.</p>'
             '<ul>'
+            '<li>Return Type: <b>%s</b></li>'
             '<li>Project: <b>%s</b></li>'
             '<li>Period: <b>%s</b></li>'
             '<li>Amount: <b>%s %s</b></li>'
             '</ul>'
         ) % (
             subscription.partner_id.name or '',
+            return_type_label,
             subscription.project_id.name or '',
             ret.period_name or '%s - %s' % (ret.date_from, ret.date_to),
             subscription.currency_id.symbol or '',

@@ -11,22 +11,20 @@ class InvestmentActualReturn(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date_from desc'
 
-
-    
     name = fields.Char(
         string='Reference',
         readonly=True,
         copy=False,
         default='New'
     )
-    
+
     subscription_id = fields.Many2one(
         'investment.subscription',
         string='Investment',
         required=True,
         ondelete='cascade'
     )
-    
+
     membership_id = fields.Many2one(
         'investment.membership',
         related='subscription_id.membership_id',
@@ -34,7 +32,7 @@ class InvestmentActualReturn(models.Model):
         store=True,
         readonly=True
     )
-    
+
     partner_id = fields.Many2one(
         'res.partner',
         related='subscription_id.partner_id',
@@ -42,7 +40,7 @@ class InvestmentActualReturn(models.Model):
         store=True,
         readonly=True
     )
-    
+
     project_id = fields.Many2one(
         'investment.project',
         related='subscription_id.project_id',
@@ -50,99 +48,154 @@ class InvestmentActualReturn(models.Model):
         store=True,
         readonly=True
     )
-    
+
+    # ===== نوع العائد =====
+    return_type = fields.Selection([
+        ('return_1', 'Return 1 (One-time)'),
+        ('return_2', 'Return 2 (Recurring)'),
+    ], string='Return Type', default='return_2', required=True)
+
     period_name = fields.Char(
         string='Period',
         compute='_compute_period_name',
         store=True
     )
-    
+
     date_from = fields.Date(string='From Date', required=True)
     date_to = fields.Date(string='To Date', required=True)
-    
+
     expected_amount = fields.Float(
         string='Expected Amount',
         compute='_compute_expected_amount',
         store=True,
         readonly=True
     )
-    
+
     actual_amount = fields.Float(
         string='Actual Amount',
         required=True,
         help='المبلغ الفعلي المدفوع للعميل',
         default=0.0
     )
-    
+
     difference = fields.Float(
         string='Difference',
         compute='_compute_difference',
         store=True
     )
-    
+
     payment_journal_id = fields.Many2one(
         'account.journal',
         string='Payment Journal',
         domain="[('type', 'in', ('bank', 'cash'))]"
     )
-    
+
     payment_id = fields.Many2one(
         'account.payment',
         string='Payment',
         readonly=True,
         copy=False
     )
-    
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('paid', 'Paid'),
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', tracking=True)
-    
+
     notes = fields.Text(string='Notes')
-    
+
     company_id = fields.Many2one(
         'res.company',
         related='subscription_id.company_id',
         store=True
     )
 
-
-    @api.depends('subscription_id', 'date_from', 'date_to')
+    @api.depends('subscription_id', 'return_type', 'date_from', 'date_to')
     def _compute_expected_amount(self):
         for rec in self:
             if not rec.subscription_id:
                 rec.expected_amount = 0.0
                 continue
-            
+
             sub = rec.subscription_id
-            
-            if sub.fixed_return_amount > 0:
-                rec.expected_amount = sub.fixed_return_amount
+
+            if rec.return_type == 'return_1':
+                # العائد الأول (مرة واحدة)
+                rec.expected_amount = (sub.return_1_amount or 0.0) * sub.share_count
             else:
-                rec.expected_amount = sub.expected_period_return or 0.0
+                # العائد الثاني (متكرر)
+                if sub.return_2_amount > 0:
+                    rec.expected_amount = sub.return_2_amount * sub.share_count
+                elif sub.return_2_percentage > 0:
+                    rec.expected_amount = (sub.return_2_percentage / 100) * sub.amount
+                else:
+                    rec.expected_amount = sub.expected_period_return or 0.0
 
     @api.depends('expected_amount', 'actual_amount')
     def _compute_difference(self):
         for rec in self:
             rec.difference = rec.actual_amount - rec.expected_amount
 
-    @api.onchange('subscription_id')
+    @api.depends('return_type', 'date_from', 'date_to', 'subscription_id')
+    def _compute_period_name(self):
+        for rec in self:
+            if rec.return_type == 'return_1':
+                rec.period_name = _('Return 1 - %s') % (rec.date_from.strftime('%B %Y') if rec.date_from else '')
+            else:
+                if rec.date_from and rec.date_to:
+                    rec.period_name = '%s - %s' % (
+                        rec.date_from.strftime('%B %Y'),
+                        rec.date_to.strftime('%B %Y')
+                    )
+                else:
+                    rec.period_name = _('Return 2')
+
+    @api.onchange('subscription_id', 'return_type')
     def _onchange_subscription(self):
         if not self.subscription_id:
             return
-        
+
         sub = self.subscription_id
         today = fields.Date.today()
-        
-        # ===== التحقق من فترة السكون =====
+
+        # ===== Return 1 (One-time) =====
+        if self.return_type == 'return_1':
+            if sub.return_1_amount <= 0 or not sub.return_1_date:
+                raise UserError(_(
+                    'Return 1 is not configured for this project!\n'
+                    'Please set Return 1 Amount and Date in the project.'
+                ))
+            
+            # Check if Return 1 already exists
+            return_1_exists = sub.actual_return_ids.filtered(
+                lambda r: r.return_type == 'return_1' and r.state != 'cancelled'
+            )
+            if return_1_exists:
+                raise UserError(_(
+                    'Return 1 has already been created for this investment!\n'
+                    'You can only create one Return 1 payment.'
+                ))
+            
+            if today < sub.return_1_date:
+                raise UserError(_(
+                    'Return 1 date (%s) is in the future!\n'
+                    'Please wait until the payment date.'
+                ) % sub.return_1_date.strftime('%Y-%m-%d'))
+            
+            self.date_from = sub.return_1_date
+            self.date_to = sub.return_1_date
+            self.expected_amount = sub.return_1_amount * sub.share_count
+            self.actual_amount = self.expected_amount
+            return
+
+        # ===== Return 2 (Recurring) =====
+        # Check grace period
         if not sub.grace_period_passed:
-            # حساب الوقت المتبقي بالشهور والأيام
             diff = relativedelta(sub.returns_start_date, today)
             months_remaining = diff.months + (diff.years * 12)
-            days_remaining = (sub.returns_start_date - today).days  # إجمالي الأيام
-            
-            # ⚠️ التصحيح: عرض الشهور والأيام الإجمالية بين قوسين
+            days_remaining = (sub.returns_start_date - today).days
+
             raise UserError(_(
                 '⛔ لا يمكن إنشاء دفع عائد الآن!\n\n'
                 'فترة السكون: %s شهور\n'
@@ -151,40 +204,55 @@ class InvestmentActualReturn(models.Model):
                 'الوقت المتبقي: %s شهر (%s يوم)\n\n'
                 'يمكنك إنشاء دفع العائد بعد: %s'
             ) % (
-                sub.grace_period_months or 0,
+                sub.return_2_grace_months or sub.grace_period_months or 0,
                 sub.investment_date,
                 sub.returns_start_date,
                 months_remaining,
-                days_remaining,  # ⚠️ إجمالي الأيام مش الأيام الزيادة
+                days_remaining,
                 sub.returns_start_date.strftime('%Y-%m-%d') if sub.returns_start_date else 'N/A'
             ))
-        
-        # ===== حساب تاريخ العائد القادم =====
-        if sub.actual_return_ids:
-            last_return = sub.actual_return_ids.sorted('date_to', reverse=True)[0]
+
+        # Calculate next period
+        return_2_returns = sub.actual_return_ids.filtered(
+            lambda r: r.return_type == 'return_2' and r.state != 'cancelled'
+        )
+        if return_2_returns:
+            last_return = return_2_returns.sorted('date_to', reverse=True)[0]
             next_date_from = last_return.date_to + timedelta(days=1)
         else:
-            next_date_from = sub.returns_start_date
-        
+            next_date_from = sub.return_2_first_date or sub.returns_start_date
+
         if not next_date_from:
             raise UserError(_('خطأ: تاريخ بدء العوائد غير محدد!'))
-        
+
         if next_date_from > today:
             raise UserError(_(
                 '⏳ تاريخ العائد القادم (%s) في المستقبل!'
             ) % next_date_from.strftime('%Y-%m-%d'))
-        
-        # ===== تعبئة التواريخ تلقائياً =====
+
+        # Check last date
+        if sub.return_2_last_date and next_date_from > sub.return_2_last_date:
+            raise UserError(_(
+                'All return payments have been completed!\n'
+                'Last return date was: %s'
+            ) % sub.return_2_last_date.strftime('%Y-%m-%d'))
+
         self.date_from = next_date_from
-        self.date_to = next_date_from + relativedelta(months=1, days=-1)
-        
-        # ===== تعبئة المبلغ المتوقع =====
-        if sub.fixed_return_amount > 0:
-            self.expected_amount = sub.fixed_return_amount
-            self.actual_amount = sub.fixed_return_amount
+        period_months = sub.return_2_period_months or 1
+        self.date_to = next_date_from + relativedelta(months=period_months, days=-1)
+
+        if sub.return_2_last_date and self.date_to > sub.return_2_last_date:
+            self.date_to = sub.return_2_last_date
+
+        # Calculate expected amount
+        if sub.return_2_amount > 0:
+            self.expected_amount = sub.return_2_amount * sub.share_count
+        elif sub.return_2_percentage > 0:
+            self.expected_amount = (sub.return_2_percentage / 100) * sub.amount
         else:
             self.expected_amount = sub.expected_period_return or 0.0
-            self.actual_amount = sub.expected_period_return or 0.0
+        
+        self.actual_amount = self.expected_amount
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -195,13 +263,13 @@ class InvestmentActualReturn(models.Model):
 
     def action_register_payment(self):
         self.ensure_one()
-        
+
         if not self.payment_journal_id:
             raise UserError(_('Please select payment journal!'))
-        
+
         if self.actual_amount <= 0:
             raise UserError(_('Actual amount must be greater than zero!'))
-        
+
         payment_vals = {
             'payment_type': 'outbound',
             'partner_type': 'customer',
@@ -209,12 +277,12 @@ class InvestmentActualReturn(models.Model):
             'journal_id': self.payment_journal_id.id,
             'amount': self.actual_amount,
             'date': fields.Date.today(),
-            'memo': _('Return Payment - %s - %s [%s]') % (self.period_name, self.subscription_id.name),
+            'memo': _('Return Payment - %s - %s [%s]') % (self.period_name, self.subscription_id.name, self.return_type),
         }
-        
+
         payment = self.env['account.payment'].create(payment_vals)
         payment.action_post()
-        
+
         self.write({
             'payment_id': payment.id,
             'state': 'paid'

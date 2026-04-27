@@ -1,3 +1,4 @@
+# investment_club/models/membership.py
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, ValidationError
 from psycopg2 import IntegrityError
@@ -130,6 +131,7 @@ class InvestmentMembership(models.Model):
         ('initial_invoiced', 'Initial Invoiced'),
         ('active', 'Active'),
         ('expired', 'Expired'),
+        ('terminated', 'Terminated'),
         ('cancelled', 'Cancelled')
     ], string='Status', default='draft', tracking=True)
 
@@ -159,11 +161,41 @@ class InvestmentMembership(models.Model):
 
     notes = fields.Text(string='Notes')
 
+    # ===== Termination Fields =====
+
+    original_paid_fee = fields.Float(
+        string='Original Paid Fee',
+        default=0.0,
+        help='المبلغ الذي دفعه العميل عند تفعيل العضوية'
+    )
+
+    termination_date = fields.Date(
+        string='Termination Date',
+        readonly=True,
+        copy=False
+    )
+
+    termination_reason = fields.Text(
+        string='Termination Reason',
+        readonly=True
+    )
+
+    termination_refund_amount = fields.Float(
+        string='Termination Refund Amount',
+        readonly=True
+    )
+
+    termination_deduction = fields.Float(
+        string='Termination Deduction',
+        readonly=True,
+        help='مبلغ الخصم عند الفسخ خلال أول 3 شهور'
+    )
+
     investor_code = fields.Char(string='Investor code', store=True)
 
     invoice_count = fields.Integer(compute='_compute_invoice_count')
 
-    investment_count = fields.Integer()
+    investment_count = fields.Integer(compute='_compute_investment_count')
 
     # ===== Onchange =====
 
@@ -184,11 +216,9 @@ class InvestmentMembership(models.Model):
                 continue
 
             if membership.renewal_ids:
-                # Use new_expiry_date directly from the latest renewal
                 last_renewal = membership.renewal_ids.sorted('renewal_date', reverse=True)[0]
                 membership.expiry_date = last_renewal.new_expiry_date
             else:
-                # No renewals yet, calculate from membership_date
                 if membership.subscription_period == 'monthly':
                     membership.expiry_date = membership.membership_date + timedelta(days=29)
                 elif membership.subscription_period == 'quarterly':
@@ -229,7 +259,6 @@ class InvestmentMembership(models.Model):
             count = 0
             if rec.initial_invoice_id:
                 count += 1
-            # Count renewal invoice only if different from initial
             if rec.current_invoice_id and rec.current_invoice_id != rec.initial_invoice_id:
                 count += 1
             rec.invoice_count = count
@@ -328,7 +357,6 @@ class InvestmentMembership(models.Model):
         invoice = self.env['account.move'].create(invoice_vals)
         renewal.write({'invoice_id': invoice.id, 'state': 'invoiced'})
 
-        # Only update current invoice, preserve active state
         self.write({
             'current_invoice_id': invoice.id,
         })
@@ -344,7 +372,11 @@ class InvestmentMembership(models.Model):
     def action_confirm_payment(self):
         self.ensure_one()
         if self.payment_state == 'paid':
-            self.write({'state': 'active'})
+            # Store original paid fee at activation time
+            vals = {'state': 'active'}
+            if not self.original_paid_fee or self.original_paid_fee <= 0:
+                vals['original_paid_fee'] = self.initial_membership_fee
+            self.write(vals)
             last_renewal = self.renewal_ids.sorted('renewal_date', reverse=True)[:1]
             if last_renewal:
                 last_renewal.write({'state': 'paid'})
@@ -365,12 +397,42 @@ class InvestmentMembership(models.Model):
         else:  # yearly
             return new_start + timedelta(days=364)
 
+    def action_terminate(self):
+        """Open membership termination wizard."""
+        self.ensure_one()
+        if self.state not in ('active', 'initial_invoiced'):
+            raise UserError(_('Only active memberships can be terminated!'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Terminate Membership'),
+            'res_model': 'membership.terminate.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_membership_id': self.id,
+            },
+        }
+
+    def action_death_case(self):
+        """Open investor death case wizard."""
+        self.ensure_one()
+        if self.state not in ('active', 'initial_invoiced'):
+            raise UserError(_('Only active memberships can process death case!'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Investor Death Case'),
+            'res_model': 'investor.death.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_membership_id': self.id,
+            },
+        }
+
     def action_cancel(self):
         """Cancel membership and cancel unpaid related invoices."""
-        # Cancel current invoice if unpaid
         if self.current_invoice_id and self.current_invoice_id.payment_state != 'paid':
             self.current_invoice_id.button_cancel()
-        # Cancel renewal invoices that are still unpaid
         for renewal in self.renewal_ids.filtered(lambda r: r.state == 'invoiced'):
             if renewal.invoice_id and renewal.invoice_id.payment_state != 'paid':
                 renewal.invoice_id.button_cancel()
@@ -391,18 +453,36 @@ class InvestmentMembership(models.Model):
         }
 
     def action_open_investment(self):
-        pass
+        self.ensure_one()
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': _('Investments'),
+            'res_model': 'investment.subscription',
+            'view_mode': 'list,form',
+            'domain': [('membership_id', '=', self.id)],
+            'target': 'current',
+            'context': {
+                'default_membership_id': self.id,
+                'default_partner_id': self.partner_id.id,
+            },
+        }
+
+        if self.investment_count == 1:
+            action.update({
+                'view_mode': 'form',
+                'res_id': self.investment_ids[:1].id,
+            })
+
+        return action
 
     def _compute_investment_count(self):
-        pass
+        for rec in self:
+            rec.investment_count = len(rec.investment_ids)
+
     # ===== Sequence / Investor Code (Merged) =====
 
     def _get_club_sequence(self, club_id=None):
-        """Get or create a dedicated sequence for a club.
-
-        Accepts either a club_id (int) for use during create,
-        or reads from self.club_id for use on existing records.
-        """
+        """Get or create a dedicated sequence for a club."""
         if club_id:
             club = self.env['investment.club'].browse(club_id)
         elif hasattr(self, 'club_id') and self.club_id:
@@ -444,18 +524,15 @@ class InvestmentMembership(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            # Generate membership number
             if not vals.get('membership_number') or vals.get('membership_number') == 'New':
                 vals['membership_number'] = self.env['ir.sequence'].next_by_code('investment.membership')
 
-            # Generate investor code before create
             if vals.get('club_id') and not vals.get('investor_code'):
                 vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
 
         try:
             return super().create(vals_list)
         except IntegrityError:
-            # Retry on race condition (duplicate investor_code)
             for vals in vals_list:
                 if vals.get('club_id'):
                     vals['investor_code'] = self._generate_code_for_vals(vals['club_id'])
@@ -484,13 +561,7 @@ class InvestmentMembership(models.Model):
         )
 
     def _cron_send_renewal_reminders(self):
-        """Send renewal reminder notifications for memberships expiring soon.
-
-        Reads from settings:
-        - investment_club.enable_renewal_notifications
-        - investment_club.auto_renewal_days
-        """
-        # Check if notifications are enabled
+        """Send renewal reminder notifications for memberships expiring soon."""
         if not self._get_config('enable_renewal_notifications', 'True') == 'True':
             return
 
@@ -498,7 +569,6 @@ class InvestmentMembership(models.Model):
         today = fields.Date.today()
         reminder_date = today + timedelta(days=days_before)
 
-        # Find active memberships expiring within the reminder window
         memberships = self.search([
             ('state', '=', 'active'),
             ('expiry_date', '<=', reminder_date),
@@ -510,7 +580,6 @@ class InvestmentMembership(models.Model):
             days_left = (membership.expiry_date - today).days
             self._send_renewal_notification(membership, days_left)
 
-        # Also notify overdue memberships
         overdue = self.search([
             ('state', '=', 'active'),
             ('expiry_date', '<', today),
@@ -553,11 +622,11 @@ class InvestmentMembership(models.Model):
             '<p>لقد انتهت عضويتك في <b>%s</b> منذ <b>%s يوم</b> بتاريخ <b>%s</b>.</p>'
             '<p>يرجى تجديد العضوية في أقرب وقت ممكن.</p>'
         ) % (
-                   membership.partner_id.name or '',
-                   membership.club_id.name or '',
-                   days_overdue,
-                   membership.expiry_date,
-               )
+            membership.partner_id.name or '',
+            membership.club_id.name or '',
+            days_overdue,
+            membership.expiry_date,
+        )
 
         membership.message_post(
             subject=subject,
@@ -566,6 +635,7 @@ class InvestmentMembership(models.Model):
             message_type='notification',
             subtype_xmlid='mail.mt_comment',
         )
+
     def _cron_auto_expire_memberships(self):
         """Automatically set active memberships to expired if past expiry."""
         today = fields.Date.today()

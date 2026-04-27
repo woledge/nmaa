@@ -1,9 +1,9 @@
 # investment_club/__manifest__.py
 {
     'name': 'Investment Clubs Management',
-    'version': '18.0.8.1.0',
+    'version': '18.0.9.0.0',
     'category': 'Investment',
-    'summary': 'Complete investment management system with Customer Membership Number',
+    'summary': 'Complete investment management system with Unified Return System',
     'description': """
         Investment Clubs Management for Al-Namaa - Complete System
 
@@ -15,6 +15,12 @@
         5. Investments - الاستثمارات (تظهر برقم العضوية)
         6. Return Payments - دفع العوائد (تظهر برقم العضوية)
 
+        Unified Return System (New):
+        - Return 1: One-time return (عائد مرة واحدة)
+        - Return 2: Recurring return (عائد متكرر)
+        - All fields available per project - fill what you need
+        - Grace periods, durations, and dates fully configurable
+
         Customer Membership Number:
         - فريد (Unique) - لا يتكرر
         - يظهر في جميع الشاشات (Membership, Investment, Returns)
@@ -23,7 +29,7 @@
     """,
     'author': 'Woledge',
     'website': '',
-    'depends': ['base', 'mail', 'account', 'analytic', 'product', 'contacts', 'crm'],
+    'depends': ['base', 'mail', 'account', 'analytic', 'product', 'contacts', 'crm', 'sale_contract_auto'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -38,9 +44,11 @@
         'views/crm_lead_views.xml',
         'views/contact_codes_view.xml',
         'views/res_config_settings_views.xml',
+        'views/account_payment_inherit_views.xml',
+        'views/sale_contract_inherit_views.xml',
         'views/menu.xml',
-        # ✅ إصلاح: إضافة views ناقصة كانت
-        # 'views/dashboard_views.xml',
+        'views/terminate_wizards_views.xml',
+        'security/investment_club_security.xml',  # Rules loaded AFTER models
         'reports/project_report.xml',
         'reports/returns_report.xml',
         'reports/renewal_due_report.xml',

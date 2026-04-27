@@ -21,7 +21,7 @@ class ProjectProfitReport(models.AbstractModel):
             total_revenue = sum(inv.amount for inv in investments)
             
             # العوائد المتوقعة (مصروفات)
-            monthly_returns = sum(inv.expected_monthly_return for inv in investments)
+            monthly_returns = sum(inv.expected_period_return for inv in investments)
             annual_returns = monthly_returns * 12
             
             # من Analytic Account (لو فيه مصروفات حقيقية)
