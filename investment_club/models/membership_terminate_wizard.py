@@ -53,6 +53,15 @@ class MembershipTerminateWizard(models.TransientModel):
         store=True
     )
 
+    termination_attachment = fields.Binary(
+        string='Attachment',
+        attachment=True
+    )
+
+    termination_attachment_name = fields.Char(
+        string='Attachment Filename'
+    )
+
     increase_amount = fields.Float(
         string='Increase Amount',
         compute='_compute_financials',
@@ -208,30 +217,32 @@ class MembershipTerminateWizard(models.TransientModel):
 
     def _get_default_income_account(self):
         """Get the default income account for recording company share."""
+        self.ensure_one()
         company = self.membership_id.company_id or self.env.company
-        membership = self.membership_id.with_company(company)
-        product = membership.membership_product_id or membership.subscription_product_id
 
-        # Prefer the membership product's configured income account.
-        if product:
-            income_account = product.product_tmpl_id.with_company(company).get_product_accounts().get('income')
-            if income_account:
-                return income_account
+        # First try to get from the default product category income account.
+        default_category = self.env.ref('product.product_category_all', raise_if_not_found=False)
+        income_account = default_category.with_company(company).property_account_income_categ_id \
+            if default_category else self.env['account.account']
+        if income_account:
+            return income_account
 
-        # Fallback to the default category income account configured for this company.
-        default_values = self.env['ir.default'].with_company(company)._get_model_defaults('product.category')
-        default_account_id = default_values.get('property_account_income_categ_id')
-        if default_account_id:
-            income_account = self.env['account.account'].browse(default_account_id).exists()
-            if income_account:
-                return income_account
-
-        # Last fallback: any active revenue account in the company.
-        return self.env['account.account'].search([
-            ('company_ids', 'in', company.id),
-            ('deprecated', '=', False),
-            ('account_type', 'in', ['income', 'income_other']),
+        category = self.env['product.category'].with_company(company).search([
+            ('property_account_income_categ_id', '!=', False),
         ], limit=1)
+        if category.property_account_income_categ_id:
+            return category.property_account_income_categ_id
+
+        # Fallback: find a regular income account for the company.
+        income_account = self.env['account.account'].search([
+            ('company_ids', 'in', company.ids),
+            ('deprecated', '=', False),
+            ('account_type', 'in', ('income', 'income_other')),
+        ], limit=1)
+        if income_account:
+            return income_account
+
+        return self.env['account.account']
 
     def _create_company_income_entry(self, membership, income_amount, description):
         """Create a journal entry recording company income from termination.
@@ -255,9 +266,8 @@ class MembershipTerminateWizard(models.TransientModel):
         if not income_account:
             return False
 
-        # Use the journal liquidity/default account available on this Odoo version.
-        bank_account = self.refund_journal_id.default_account_id or \
-            self.refund_journal_id.suspense_account_id
+        # Try to get liquidity account from the refund journal.
+        bank_account = self.refund_journal_id.default_account_id
 
         if bank_account:
             # Journal entry using the refund journal (bank)
@@ -293,7 +303,7 @@ class MembershipTerminateWizard(models.TransientModel):
             [('type', '=', 'general'), ('company_id', '=', membership.company_id.id)],
             limit=1
         )
-        if misc_journal and misc_journal.default_account_id:
+        if misc_journal:
             move_vals = {
                 'move_type': 'entry',
                 'journal_id': misc_journal.id,
@@ -322,6 +332,19 @@ class MembershipTerminateWizard(models.TransientModel):
             return move
 
         return False
+
+    def _attach_termination_document(self, membership):
+        """Attach the termination document to the membership record."""
+        if self.termination_attachment:
+            self.env['ir.attachment'].create({
+                'name': self.termination_attachment_name or 'membership_termination_attachment',
+                'res_model': membership._name,
+                'res_id': membership.id,
+                'type': 'binary',
+                'datas': self.termination_attachment,
+                'datas_fname': self.termination_attachment_name or 'membership_termination_attachment',
+                'mimetype': 'application/octet-stream',
+            })
 
     def action_confirm_termination(self):
         self.ensure_one()
@@ -382,6 +405,8 @@ class MembershipTerminateWizard(models.TransientModel):
             'termination_refund_amount': self.refund_amount,
             'termination_deduction': self.actual_deduction,
         })
+
+        self._attach_termination_document(membership)
 
         # ===== 4. Post chatter message =====
         summary = _(
