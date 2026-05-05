@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t
+        t-name="pos_get_weight_button.ControlButtons"
+        t-inherit="point_of_sale.ControlButtons"
+        t-inherit-mode="extension"
+    >
+        <xpath expr="//SelectPartnerButton" position="after">
+            <button
+                t-attf-class="{{ buttonClass }} flex-shrink-0"
+                t-att-disabled="!this.pos.get_order()?.get_selected_orderline()"
+                t-on-click="() => this.onClickGetWeight()"
+            >
+                <i class="fa fa-balance-scale me-1"/>
+                Get Weight
+            </button>
+        </xpath>
+    </t>
+</templates>
