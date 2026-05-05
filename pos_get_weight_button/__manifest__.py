@@ -3,6 +3,8 @@
     "name": "POS Get Weight Button",
     "version": "1.0",
     "category": "Sales/Point of Sale",
+    "auther":"Ibrahim Elmasry",
+    "summary": "POS Get Weight Button",
     "summary": "Adds a Get Weight button to POS control buttons",
     "depends": ["point_of_sale"],
     "data": [],
