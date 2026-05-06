@@ -31,7 +31,7 @@
                 <header>
                     <button name="action_create_initial_invoice" type="object" 
                             string="Create Initial Invoice" 
-                            invisible="state != 'draft'"
+                            invisible="state != 'reviewed'"
                             class="btn-primary"/>
                     
                     <button name="action_confirm_payment" type="object" 
@@ -63,6 +63,8 @@
                             string="Cancel" 
                             invisible="state in ('cancelled')"
                             class="btn-danger"/>
+                    <button name="action_review_money_bank" type="object"
+                            string="bank reviewed" invisible="state != 'draft'"/>
                     
                     <field name="state" widget="statusbar"/>
                 </header>
