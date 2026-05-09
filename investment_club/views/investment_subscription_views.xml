@@ -31,7 +31,7 @@
                 <header>
                     <button name="action_register_payment" type="object" 
                             string="Register Payment" 
-                            invisible="state != 'draft'"
+                            invisible="state != 'reviewed'"
                             class="btn-primary"/>
                     
                     <button name="action_activate" type="object" 
@@ -63,6 +63,8 @@
                             string="Cancel" 
                             invisible="state in ('closed', 'cancelled')"
                             class="btn-danger"/>
+                    <button name="action_review_money_bank_inv" type="object"
+                            string="bank reviewed" invisible="state != 'draft'"/>
                     
                     <field name="state" widget="statusbar"/>
                 </header>

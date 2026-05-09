@@ -272,6 +272,7 @@ class InvestmentSubscription(models.Model):
 
     state = fields.Selection([
         ('draft', 'Draft'),
+        ('reviewed', 'Reviewed'),
         ('pending_approval', 'Pending Approval'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
@@ -462,6 +463,9 @@ class InvestmentSubscription(models.Model):
             'target': 'new',
             'context': {'default_subscription_id': self.id},
         }
+    def action_review_money_bank_inv(self):
+        for rec in self:
+            rec.state = 'reviewed'
 
     def action_register_payment(self):
         self.ensure_one()

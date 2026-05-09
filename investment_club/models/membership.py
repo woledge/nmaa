@@ -128,6 +128,7 @@ class InvestmentMembership(models.Model):
 
     state = fields.Selection([
         ('draft', 'Draft'),
+        ('reviewed', 'Reviewed'),
         ('initial_invoiced', 'Initial Invoiced'),
         ('active', 'Active'),
         ('expired', 'Expired'),
@@ -368,6 +369,11 @@ class InvestmentMembership(models.Model):
             'res_id': invoice.id,
             'view_mode': 'form',
         }
+
+    def action_review_money_bank(self):
+        for rec in self:
+            rec.state = 'reviewed'
+
 
     def action_confirm_payment(self):
         self.ensure_one()
