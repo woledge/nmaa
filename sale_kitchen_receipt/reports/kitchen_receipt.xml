@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_kitchen_receipt" model="report.paperformat">
+        <field name="name">Kitchen Receipt 80mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">80</field>
+        <field name="page_height">180</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">2</field>
+        <field name="margin_bottom">2</field>
+        <field name="margin_left">2</field>
+        <field name="margin_right">2</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">203</field>
+    </record>
+
+    <record id="action_kitchen_receipt_report" model="ir.actions.report">
+        <field name="name">طباعة اذن المطبخ</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-html</field>
+        <field name="report_name">sale_kitchen_receipt.kitchen_receipt_template</field>
+        <field name="report_file">sale_kitchen_receipt.kitchen_receipt_template</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">form</field>
+        <field name="paperformat_id" ref="sale_kitchen_receipt.paperformat_kitchen_receipt"/>
+    </record>
+
+    <template id="kitchen_receipt_template">
+        <t t-call="web.html_container">
+            
+            <script type="text/javascript">
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() { window.close(); }, 300);
+                };
+            </script>
+
+            <t t-foreach="docs" t-as="doc">
+                <div class="page" style="direction: rtl; font-family: 'Arial', sans-serif; font-size: 11px; color: #000; width: 100%; max-width: 280px; margin: 0 auto; padding: 0; line-height: 1.3;">
+                    
+                    <style type="text/css">
+                        @media print {
+                            body { margin: 0; padding: 0; width: 80mm; }
+                            .page { margin: 0; padding: 0; width: 100%; }
+                            @page { margin: 0; size: auto; }
+                        }
+                    </style>
+
+                    <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: center; padding: 3px 0; font-size: 12px; font-weight: bold; margin-bottom: 5px;">
+                        We Do Our Best For You To You
+                    </div>
+
+                    <table style="width: 100%; font-size: 11px; border-collapse: collapse; margin-bottom: 5px;">
+                        <tr>
+                            <td style="text-align: right; width: 35%; padding: 1px 0; font-weight: bold;">رقم البون:</td>
+                            <td style="text-align: left; width: 65%; padding: 1px 0; font-weight: bold;"><span t-esc="doc.name"/></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding: 1px 0;">التاريخ:</td>
+                            <td style="text-align: left; padding: 1px 0; direction: ltr;"><span t-esc="doc.date_order.strftime('%d/%m/%Y %I:%M %p')"/></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding: 1px 0; font-weight: bold;">اسم العميل:</td>
+                            <td style="text-align: left; padding: 1px 0; font-weight: bold;"><span t-esc="doc.partner_id.name"/></td>
+                        </tr>
+                        <t t-if="doc.partner_id.phone or doc.partner_id.mobile">
+                            <tr>
+                                <td style="text-align: right; padding: 1px 0;">التليفون:</td>
+                                <td style="text-align: left; padding: 1px 0;"><span t-esc="doc.partner_id.phone or doc.partner_id.mobile"/></td>
+                            </tr>
+                        </t>
+                        <t t-if="doc.partner_id.street or doc.partner_id.city">
+                            <tr>
+                                <td style="text-align: right; padding: 1px 0;">العنوان:</td>
+                                <td style="text-align: left; padding: 1px 0;">
+                                    <span t-esc="doc.partner_id.city or ''"/> - <span t-esc="doc.partner_id.street or ''"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr>
+                            <td style="text-align: right; padding: 1px 0;">العمارة/الدور:</td>
+                            <td style="text-align: left; padding: 1px 0;"><span t-esc="doc.x_building_floor or '-'"/></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding: 1px 0;">علامة مميزة:</td>
+                            <td style="text-align: left; padding: 1px 0;"><span t-esc="doc.x_landmark or '-'"/></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding: 1px 0; font-weight: bold;">اسم الطيار:</td>
+                            <td style="text-align: left; padding: 1px 0; font-weight: bold;"><span t-esc="doc.x_driver_name or '-'"/></td>
+                        </tr>
+                    </table>
+
+                    <div style="background-color: #000; color: #fff; text-align: center; padding: 2px 0; font-size: 11px; font-weight: bold; margin: 4px 0;">
+                        إذن تشغيل المطبخ
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 11px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #000; font-weight: bold; background-color: #f2f2f2;">
+                                <td style="text-align: right; padding: 3px 2px; width: 50%;">الصنف</td>
+                                <td style="text-align: center; padding: 3px 2px; width: 15%;">الكمية</td>
+                                <td style="text-align: left; padding: 3px 2px; width: 35%;">السعر الكلي</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="doc.order_line" t-as="line">
+                                <tr style="border-bottom: 1px dashed #ddd;">
+                                    <td style="text-align: right; padding: 4px 2px; font-weight: bold; font-size: 11.5px;">
+                                        <span t-esc="line.product_id.name or line.name"/>
+                                    </td>
+                                    <td style="text-align: center; padding: 4px 2px; font-weight: bold; font-size: 12px;">
+                                        <span t-esc="'%.0f' % line.product_uom_qty"/>
+                                    </td>
+                                    <td style="text-align: left; padding: 4px 2px; direction: ltr;">
+                                        <span t-esc="'%.2f' % line.price_subtotal"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div style="border-top: 1px solid #000; padding-top: 3px; font-size: 11px;">
+                        <div style="display: block; overflow: hidden; margin-bottom: 2px;">
+                            <span style="float: right;">قيمة الطلبات:</span>
+                            <span style="float: left; direction: ltr;"><span t-esc="'%.2f' % doc.amount_untaxed"/></span>
+                        </div>
+                        <div style="display: block; overflow: hidden; margin-bottom: 2px;">
+                            <span style="float: right;">الخصم:</span>
+                            <span style="float: left; direction: ltr;">0.00</span>
+                        </div>
+                        <div style="display: block; overflow: hidden; background-color: #000; color: #fff; padding: 3px 5px; font-size: 12px; font-weight: bold; margin-top: 3px;">
+                            <span style="float: right;">الإجمالي:</span>
+                            <span style="float: left; direction: ltr;"><span t-esc="'%.2f' % doc.amount_total"/> ج.م</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; font-size: 11px; padding: 4px 0; font-weight: bold; letter-spacing: 1px;">
+                        ID: <span t-esc="'%08d' % doc.id"/>
+                    </div>
+
+                    <div style="border: 1px solid #000; text-align: center; padding: 2px; margin-top: 2px; font-size: 10px;">
+                        المستخدم: <span t-esc="doc.user_id.name or ''"/>
+                    </div>
+
+                    <div style="text-align: center; font-size: 10px; font-weight: bold; margin-top: 8px; line-height: 1.4; border-top: 1px dashed #000; padding-top: 4px;">
+                        نظام الاسترجاع مع المندوب أثناء التسليم فقط <br/>
+                        رجاء استلام الأوردر كامل من المندوب
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
