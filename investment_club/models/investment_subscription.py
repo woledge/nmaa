@@ -257,6 +257,20 @@ class InvestmentSubscription(models.Model):
         copy=False
     )
 
+    contract_printed = fields.Boolean(
+        string='Contract Printed',
+        default=False,
+        tracking=True,
+        help='Indicates whether the investment contract has been printed'
+    )
+
+    contract_print_date = fields.Date(
+        string='Contract Print Date',
+        readonly=True,
+        copy=False,
+        tracking=True
+    )
+
     payment_state = fields.Selection([
         ('not_paid', 'Not Paid'),
         ('paid', 'Paid')
@@ -548,8 +562,33 @@ class InvestmentSubscription(models.Model):
 
     def action_print_contract(self):
         self.ensure_one()
-        contract = self._get_or_create_sale_contract()
-        return contract.print_contract_report()
+        if not self.contract_id:
+            raise UserError(_('No contract found for this investment!'))
+        self.write({
+            'contract_printed': True,
+            'contract_print_date': fields.Date.today(),
+        })
+        self.message_post(
+            body=_('Contract printed on %s.') % fields.Date.today().strftime('%Y-%m-%d'),
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
+        return self.contract_id.print_contract_report()
+
+    def action_mark_contract_printed(self):
+        """Manually mark contract as printed without printing."""
+        self.ensure_one()
+        if not self.contract_id:
+            raise UserError(_('No contract found for this investment!'))
+        self.write({
+            'contract_printed': True,
+            'contract_print_date': fields.Date.today(),
+        })
+        self.message_post(
+            body=_('Contract marked as printed on %s.') % fields.Date.today().strftime('%Y-%m-%d'),
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
 
     def _get_or_create_sale_contract(self):
         self.ensure_one()

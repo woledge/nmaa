@@ -12,6 +12,9 @@
                 <field name="investment_date"/>
                 <field name="returns_start_date"/>
                 <field name="grace_period_passed" invisible="1"/>
+                <field name="contract_printed" widget="boolean_toggle" 
+                       decoration-success="contract_printed == True"
+                       decoration-danger="contract_printed == False"/>
                 <field name="months_until_returns_start"/>
                 <field name="share_count"/>
                 <field name="amount"/>
@@ -68,8 +71,9 @@
                     
                     <field name="state" widget="statusbar"/>
                 </header>
-                
-                <div class="alert alert-info" role="alert" invisible="grace_period_passed == True or state != 'active'">
+
+                <div class="alert alert-info" role="alert" 
+                     invisible="grace_period_passed == True or state != 'active'">
                     <strong>Grace Period Active!</strong> 
                     Returns will start on <field name="returns_start_date"/> 
                     (<field name="months_until_returns_start"/> months and <field name="days_until_returns_start"/> days remaining)
@@ -78,6 +82,12 @@
                 <div class="alert alert-success" role="alert" invisible="grace_period_passed == False or state != 'active'">
                     <strong>Grace Period Passed!</strong> 
                     Return payments are now available.
+                </div>
+
+                <div class="alert alert-info" role="alert" 
+                     invisible="not contract_id or contract_printed">
+                    <strong>Contract not printed yet!</strong> 
+                    Please print the contract or mark it as printed.
                 </div>
                 
                 <sheet>
@@ -166,6 +176,18 @@
                             <field name="payment_state" widget="badge"/>
                             <field name="contract_id" readonly="1"/>
                         </group>
+                        <group>
+                            <field name="contract_printed"/>
+                            <field name="contract_print_date" readonly="1"/>
+                            <button name="action_print_contract" type="object" 
+                                    string="Print Contract" 
+                                    invisible="not contract_id"
+                                    class="btn-secondary" icon="fa-print"/>
+                            <button name="action_mark_contract_printed" type="object" 
+                                    string="Mark as Printed" 
+                                    invisible="not contract_id or contract_printed"
+                                    class="btn-info" icon="fa-check"/>
+                        </group>
                     </group>
                     
                     <notebook>
@@ -207,6 +229,8 @@
                 <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
                 <filter string="Grace Period Passed" name="grace_passed" domain="[('grace_period_passed', '=', True)]"/>
                 <filter string="In Grace Period" name="in_grace" domain="[('grace_period_passed', '=', False)]"/>
+                <filter string="Contract Printed" name="contract_printed" domain="[('contract_printed', '=', True)]"/>
+                <filter string="Contract Not Printed" name="contract_not_printed" domain="[('contract_printed', '=', False)]"/>
                 <group expand="0" string="Group By">
                     <filter string="Project" name="project" context="{'group_by': 'project_id'}"/>
                 </group>
