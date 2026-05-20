@@ -11,8 +11,8 @@
         "account",
     ],
     "data": [
-        "views/sale_order_views.xml",
-        "reports/kitchen_receipt.xml",
+        "reports/kitchen_receipt.xml",  # يجب أن يكون التقرير أولاً ليتم تعريفه في النظام
+        "views/sale_order_views.xml",    # الواجهات ثانياً لتجد الأكستيرنال آي دي جاهزاً
     ],
     "installable": True,
     "application": False,
