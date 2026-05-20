@@ -162,6 +162,29 @@ class InvestmentMembership(models.Model):
 
     notes = fields.Text(string='Notes')
 
+    # ===== Contract Fields =====
+
+    contract_id = fields.Many2one(
+        'sale.contract',
+        string='Contract',
+        readonly=True,
+        copy=False
+    )
+
+    contract_printed = fields.Boolean(
+        string='Contract Printed',
+        default=False,
+        tracking=True,
+        help='Indicates whether the membership contract has been printed'
+    )
+
+    contract_print_date = fields.Date(
+        string='Contract Print Date',
+        readonly=True,
+        copy=False,
+        tracking=True
+    )
+
     # ===== Termination Fields =====
 
     original_paid_fee = fields.Float(
@@ -197,6 +220,8 @@ class InvestmentMembership(models.Model):
     invoice_count = fields.Integer(compute='_compute_invoice_count')
 
     investment_count = fields.Integer(compute='_compute_investment_count')
+
+    contract_count = fields.Integer(compute='_compute_contract_count')
 
     # ===== Onchange =====
 
@@ -264,6 +289,11 @@ class InvestmentMembership(models.Model):
                 count += 1
             rec.invoice_count = count
 
+    @api.depends('contract_id')
+    def _compute_contract_count(self):
+        for rec in self:
+            rec.contract_count = 1 if rec.contract_id else 0
+
     # ===== Actions =====
 
     def action_create_initial_invoice(self):
@@ -300,6 +330,12 @@ class InvestmentMembership(models.Model):
         })
 
         invoice.action_post()
+
+        # Update ref after post to include invoice number + membership description
+        membership_desc = _('عضوية نادي %s - %s') % (self.club_id.name, self.investor_code or '')
+        invoice.write({
+            'ref': '%s - %s' % (invoice.name, membership_desc),
+        })
 
         return {
             'type': 'ir.actions.act_window',
@@ -356,6 +392,16 @@ class InvestmentMembership(models.Model):
         }
 
         invoice = self.env['account.move'].create(invoice_vals)
+
+        # Post invoice to get the number
+        invoice.action_post()
+
+        # Update ref after post to include invoice number + membership description
+        membership_desc = _('تجديد عضوية نادي %s - %s') % (self.club_id.name, self.investor_code or '')
+        invoice.write({
+            'ref': '%s - %s' % (invoice.name, membership_desc),
+        })
+
         renewal.write({'invoice_id': invoice.id, 'state': 'invoiced'})
 
         self.write({
@@ -386,6 +432,17 @@ class InvestmentMembership(models.Model):
             last_renewal = self.renewal_ids.sorted('renewal_date', reverse=True)[:1]
             if last_renewal:
                 last_renewal.write({'state': 'paid'})
+
+            # ===== Auto-generate Sale Contract =====
+            contract = self._get_or_create_membership_contract()
+            return {
+                'type': 'ir.actions.act_window',
+                'name': _('Contract'),
+                'res_model': 'sale.contract',
+                'res_id': contract.id,
+                'view_mode': 'form',
+                'target': 'current',
+            }
         else:
             raise UserError(_('Invoice is not paid yet!'))
 
@@ -484,6 +541,125 @@ class InvestmentMembership(models.Model):
     def _compute_investment_count(self):
         for rec in self:
             rec.investment_count = len(rec.investment_ids)
+
+    # ===== Contract Methods =====
+
+    def action_view_contract(self):
+        """Open the linked sale contract, or create one if not exists."""
+        self.ensure_one()
+        if not self.contract_id:
+            return self.action_create_contract()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Contract'),
+            'res_model': 'sale.contract',
+            'res_id': self.contract_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
+    def action_create_contract(self):
+        """Open sale contract creation form with pre-filled data."""
+        self.ensure_one()
+        contract_template = self.env['contract.template'].search([], limit=1)
+        contract_title = self.env['sale.contract.title'].search([], limit=1)
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Create Membership Contract'),
+            'res_model': 'sale.contract',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_partner_id': self.partner_id.id,
+                'default_contract_date': self.membership_date or fields.Date.today(),
+                'default_amount_total': self.initial_membership_fee,
+                'default_currency_id': self.currency_id.id,
+                'default_contract_template_id': contract_template.id if contract_template else False,
+                'default_contract_title_name': contract_title.id if contract_title else False,
+                'default_investment_membership_id': self.id,
+                'default_note': _('Generated automatically from membership %s.') % (self.investor_code or self.membership_number),
+            },
+        }
+
+    def _get_or_create_membership_contract(self):
+        """Create sale contract automatically after membership activation."""
+        self.ensure_one()
+        if self.contract_id:
+            return self.contract_id
+
+        contract_template = self.env['contract.template'].search([], limit=1)
+        contract_title = self.env['sale.contract.title'].search([], limit=1)
+        agreement_text = contract_template.content if contract_template else self._get_default_membership_contract_terms()
+
+        contract = self.env['sale.contract'].create({
+            'partner_id': self.partner_id.id,
+            'contract_date': self.membership_date or fields.Date.today(),
+            'amount_total': self.initial_membership_fee,
+            'currency_id': self.currency_id.id,
+            'investment_membership_id': self.id,
+            'contract_template_id': contract_template.id if contract_template else False,
+            'contract_title_name': contract_title.id if contract_title else False,
+            'agreement_terms': agreement_text,
+            'note': _('Generated automatically from membership %s.') % (self.investor_code or self.membership_number),
+        })
+        self.contract_id = contract.id
+        return contract
+
+    def _get_default_membership_contract_terms(self):
+        """Default contract terms for membership."""
+        self.ensure_one()
+        return """
+            <p>This contract is generated automatically for the activated membership.</p>
+            <p><strong>Club:</strong> %s</p>
+            <p><strong>Membership Reference:</strong> %s</p>
+            <p><strong>Investor Code:</strong> %s</p>
+            <p><strong>Membership Date:</strong> %s</p>
+            <p><strong>Expiry Date:</strong> %s</p>
+            <p><strong>Initial Membership Fee:</strong> %s</p>
+            <p><strong>Annual Subscription Fee:</strong> %s</p>
+            <p><strong>Subscription Period:</strong> %s</p>
+        """ % (
+            self.club_id.display_name or '',
+            self.membership_number or '',
+            self.investor_code or '',
+            self.membership_date or '',
+            self.expiry_date or '',
+            self.initial_membership_fee or 0.0,
+            self.annual_subscription_fee or 0.0,
+            dict(monthly='Monthly', quarterly='Quarterly', yearly='Yearly').get(self.subscription_period, ''),
+        )
+
+    def action_print_contract(self):
+        """Print the linked membership contract and mark as printed."""
+        self.ensure_one()
+        if not self.contract_id:
+            raise UserError(_('No contract found for this membership!'))
+        self.write({
+            'contract_printed': True,
+            'contract_print_date': fields.Date.today(),
+        })
+        self.message_post(
+            body=_('Contract printed on %s.') % fields.Date.today().strftime('%Y-%m-%d'),
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
+        return self.contract_id.print_contract_report()
+
+    def action_mark_contract_printed(self):
+        """Manually mark contract as printed without printing."""
+        self.ensure_one()
+        if not self.contract_id:
+            raise UserError(_('No contract found for this membership!'))
+        self.write({
+            'contract_printed': True,
+            'contract_print_date': fields.Date.today(),
+        })
+        self.message_post(
+            body=_('Contract marked as printed on %s.') % fields.Date.today().strftime('%Y-%m-%d'),
+            message_type='notification',
+            subtype_xmlid='mail.mt_comment',
+        )
 
     # ===== Sequence / Investor Code (Merged) =====
 

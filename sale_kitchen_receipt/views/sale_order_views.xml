@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_form_inherit_kitchen" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.kitchen.receipt</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_building_floor" string="العمارة / الدور"/>
+                <field name="x_landmark" string="علامة مميزة"/>
+                <field name="x_driver_name" string="اسم الطيار"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']" position="after">
+                <button name="%(sale_kitchen_receipt.action_kitchen_receipt_report)d"
+                        type="action"
+                        string="طباعة اذن المطبخ"
+                        class="btn-primary"
+                        icon="fa-print"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="account_move_form_inherit_kitchen" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.kitchen.receipt</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='invoice_line_ids']" position="after">
+                <button name="%(sale_kitchen_receipt.action_kitchen_receipt_report)d"
+                        type="action"
+                        string="طباعة اذن المطبخ"
+                        class="btn-primary"
+                        icon="fa-print"
+                        context="{'active_id': id}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
