@@ -2,6 +2,61 @@
 <odoo>
 
     <!-- ===== Access Rules - Loaded after models are installed ===== -->
+    
+    <!-- Module Access Control: These rules grant access only when module_access_enabled is True -->
+    <!-- When the checkbox is unchecked, users have no access (as set in ir.model.access.csv) -->
+    <!-- When the checkbox is checked, these rules grant proper permissions -->
+
+    <!-- With a single group, keep rules simple: full access to module models -->
+
+    <record id="investment_project_access_rule" model="ir.rule">
+        <field name="name">Investment Project: Access</field>
+        <field name="model_id" ref="model_investment_project"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_investment_access'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="investment_subscription_access_rule" model="ir.rule">
+        <field name="name">Investment Subscription: Access</field>
+        <field name="model_id" ref="model_investment_subscription"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_investment_access'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="investment_membership_access_rule" model="ir.rule">
+        <field name="name">Investment Membership: Access</field>
+        <field name="model_id" ref="model_investment_membership"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_investment_access'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <record id="actual_return_access_rule" model="ir.rule">
+        <field name="name">Actual Return: Access</field>
+        <field name="model_id" ref="model_investment_actual_return"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_investment_access'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Access Rules - Loaded after models are installed ===== -->
 
     <!-- Project: Restrict creation to managers when setting is enabled -->
     <record id="investment_project_user_rule" model="ir.rule">

@@ -1,0 +1,59 @@
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.ENV.*
+.env
+.env.*
+requirements.txt.bak
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Odoo specific
+*.pot
+*.po
+*.mo
+*i18n-cache*
+*.xml~
+*.csv~
+
+# Logs
+*.log
+*.sql.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Coverage reports
+.coverage
+htmlcov/
+.coverage.*
+.coverage.*
+
+# Build and distribution artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+```

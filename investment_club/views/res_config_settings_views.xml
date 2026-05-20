@@ -50,6 +50,9 @@
                         <setting string="Require Approval for Investments">
                             <field name="require_approval_for_investment"/>
                         </setting>
+                        <setting string="Enable Investment Club Module Access">
+                            <field name="module_access_enabled"/>
+                        </setting>
                     </block>
 
                     <block title="Notification Settings">
