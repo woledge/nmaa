@@ -53,10 +53,7 @@
         <field name="perm_unlink" eval="True"/>
     </record>
 
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-
-    <!-- ===== Access Rules - Loaded after models are installed ===== -->
+    <!-- ===== User/Manager Rules ===== -->
 
     <!-- Project: Restrict creation to managers when setting is enabled -->
     <record id="investment_project_user_rule" model="ir.rule">

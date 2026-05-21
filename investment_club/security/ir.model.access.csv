@@ -8,7 +8,6 @@ access_actual_return,Actual Return,model_investment_actual_return,group_investme
 access_membership_terminate_wizard,Membership Terminate Wizard,model_membership_terminate_wizard,group_investment_access,1,1,1,1
 access_subscription_terminate_wizard,Subscription Terminate Wizard,model_subscription_terminate_wizard,group_investment_access,1,1,1,1
 access_investor_death_wizard,Investor Death Wizard,model_investor_death_wizard,group_investment_access,1,1,1,1
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_investment_club_user,Club User,model_investment_club,group_investment_user,1,0,0,0
 access_investment_club_manager,Club Manager,model_investment_club,group_investment_manager,1,1,1,1
 access_investment_project_user,Project User,model_investment_project,group_investment_user,1,0,0,0
