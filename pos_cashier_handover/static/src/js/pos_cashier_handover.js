@@ -21,4 +21,9 @@ patch(ClosePosPopup.prototype, {
             console.error("Cashier Handover Print Error:", error);
         }
     },
+
+    async closeSession() {
+        await this.printCashierHandover();
+        return super.closeSession(...arguments);
+    },
 });
