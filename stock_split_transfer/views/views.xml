@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- USER FORM: Add Allowed Locations field                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <record id="view_users_form_split_transfer" model="ir.ui.view">
+        <field name="name">res.users.form.split.transfer</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add allowed locations field in the Preferences page -->
+            <xpath expr="//field[@name='tz']" position="after">
+                <newline/>
+                <field name="allowed_location_ids"
+                       widget="many2many_tags"
+                       domain="[('usage', 'in', ['internal', 'transit'])]"
+                       groups="stock.group_stock_manager"
+                       placeholder="Select warehouse locations..."
+                       options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PICKING FORM: Add Split Transfer Info                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <record id="view_picking_form_split_transfer" model="ir.ui.view">
+        <field name="name">stock.picking.form.split.transfer</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add split transfer fields inside header, after statusbar -->
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="split_parent_id"
+                       invisible="not split_parent_id"
+                       readonly="1"
+                       widget="many2one_button"
+                       string="Previous Transfer"/>
+                <field name="split_child_id"
+                       invisible="not split_child_id"
+                       readonly="1"
+                       widget="many2one_button"
+                       string="Next Transfer"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PICKING LIST VIEW: Add Split Transfer Column                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <record id="view_picking_list_split_transfer" model="ir.ui.view">
+        <field name="name">stock.picking.list.split.transfer</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+
+            <!-- Add split transfer badge column -->
+            <xpath expr="//field[@name='location_id']" position="before">
+                <field name="is_split_transfer"
+                       invisible="1"
+                       widget="boolean_toggle"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PICKING SEARCH: Add Split Transfer Filter                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+
+    <record id="view_picking_search_split_transfer" model="ir.ui.view">
+        <field name="name">stock.picking.search.split.transfer</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+
+            <!-- Add filter for split transfers -->
+            <xpath expr="//filter[@name='backorder']" position="after">
+                <filter name="filter_split_transfers"
+                        string="Split Transfers"
+                        domain="[('is_split_transfer', '=', True)]"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
