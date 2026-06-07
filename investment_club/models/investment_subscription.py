@@ -349,7 +349,7 @@ class InvestmentSubscription(models.Model):
                 continue
 
             # Returns start: based on return_2_grace_months (main grace period)
-            grace_months = sub.return_2_grace_months or sub.grace_period_months or 0
+            grace_months = sub.return_2_grace_months or sub.grace_period_months or 3
             sub.returns_start_date = sub.investment_date + relativedelta(months=grace_months)
 
             # Capital return date (contract end)
@@ -642,6 +642,26 @@ class InvestmentSubscription(models.Model):
             raise UserError(_('Investment must be active to create returns!'))
 
         today = fields.Date.today()
+
+        # ===== Snooze period: 3 months from investment_date =====
+        snooze_months = 3
+        if self.investment_date:
+            snooze_end = self.investment_date + relativedelta(months=snooze_months)
+            if today < snooze_end:
+                remaining = relativedelta(snooze_end, today)
+                raise UserError(_(
+                    'لم تنتهِ فترة السكون بعد!\n\n'
+                    'فترة السكون: %s أشهر\n'
+                    'تاريخ الاستثمار: %s\n'
+                    'تنتهي فترة السكون في: %s\n\n'
+                    'المتبقي: %s شهر و %s يوم'
+                ) % (
+                    snooze_months,
+                    self.investment_date,
+                    snooze_end.strftime('%Y-%m-%d'),
+                    remaining.months + (remaining.years * 12),
+                    remaining.days,
+                ))
 
         # ===== Check Return 1 (One-time) =====
         if self.return_1_amount > 0 and self.return_1_date:
