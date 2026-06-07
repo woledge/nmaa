@@ -75,7 +75,7 @@
                 <div class="alert alert-info" role="alert" 
                      invisible="grace_period_passed == True or state != 'active'">
                     <strong>Grace Period Active!</strong> 
-                    Returns will start on <field name="returns_start_date"/> 
+                    Returns will start on <field name="returns_start_date" options="{'format': 'DD - MM - YYYY'}"/> 
                     (<field name="months_until_returns_start"/> months and <field name="days_until_returns_start"/> days remaining)
                 </div>
                 
