@@ -26,3 +26,6 @@ access_subscription_terminate_wizard_user,Subscription Terminate Wizard User,mod
 access_subscription_terminate_wizard_manager,Subscription Terminate Wizard Manager,model_subscription_terminate_wizard,group_investment_manager,1,1,1,1
 access_investor_death_wizard_user,Investor Death Wizard User,model_investor_death_wizard,group_investment_user,1,1,1,0
 access_investor_death_wizard_manager,Investor Death Wizard Manager,model_investor_death_wizard,group_investment_manager,1,1,1,1
+access_terminate_reason,Terminate Reason,model_terminate_reason,group_investment_access,1,1,1,1
+access_terminate_reason_user,Terminate Reason User,model_terminate_reason,group_investment_user,1,0,0,0
+access_terminate_reason_manager,Terminate Reason Manager,model_terminate_reason,group_investment_manager,1,1,1,1

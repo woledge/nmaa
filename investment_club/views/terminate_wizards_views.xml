@@ -112,7 +112,7 @@
                 </group>
 
                 <group string="Reason">
-                    <field name="reason" placeholder="سبب الفسخ..."/>
+                    <field name="reason" domain="['|', ('type', '=', 'membership'), ('type', '=', 'both')]"/>
                     <field name="notes" placeholder="ملاحظات إضافية..."/>
                 </group>
 
@@ -179,7 +179,7 @@
                 </group>
 
                 <group string="Reason">
-                    <field name="reason" placeholder="سبب الفسخ..."/>
+                    <field name="reason" domain="['|', ('type', '=', 'subscription'), ('type', '=', 'both')]"/>
                     <field name="notes" placeholder="ملاحظات إضافية..."/>
                 </group>
 

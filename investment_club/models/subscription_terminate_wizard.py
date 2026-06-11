@@ -107,9 +107,10 @@ class SubscriptionTerminateWizard(models.TransientModel):
     )
 
     # ===== Notes =====
-    reason = fields.Text(
+    reason = fields.Many2one(
+        'terminate.reason',
         string='Termination Reason',
-        required=True
+        required=True,
     )
 
     notes = fields.Text(string='Additional Notes')
@@ -203,7 +204,7 @@ class SubscriptionTerminateWizard(models.TransientModel):
                 subscription.share_value,
                 subscription.amount,
                 self.refund_amount,
-                self.reason,
+                self.reason.name,
             ),
             partner_ids=[subscription.partner_id.id],
             message_type='notification',

@@ -67,6 +67,9 @@ class ResPartner(models.Model):
 
     card_id = fields.Char(string='National ID')
 
+    _sql_constraints = [
+        ('card_id_unique', 'unique(card_id)', 'National ID must be unique!'),
+    ]
 
     @api.constrains("card_id")
     def _check_code(self):

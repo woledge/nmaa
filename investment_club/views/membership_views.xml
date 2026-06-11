@@ -13,7 +13,7 @@
                 <field name="annual_subscription_fee"/>
                 <field name="contract_printed" widget="boolean_toggle" 
                        decoration-success="contract_printed == True"
-                       decoration-danger="contract_printed == False"/>
+                       decoration-danger="contract_printed == False" readonly="1"/>
                 <field name="expiry_date"/>
                 <field name="next_renewal_date"/>
                 <field name="next_renewal_amount"/>
@@ -149,7 +149,7 @@
                     <group string="Contract">
                         <group>
                             <field name="contract_id" readonly="1"/>
-                            <field name="contract_printed"/>
+                            <field name="contract_printed" readonly="1"/>
                             <field name="contract_print_date" readonly="1"/>
                         </group>
                         <group>

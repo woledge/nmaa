@@ -45,6 +45,18 @@ class InvestmentProject(models.Model):
         help='حد أقصى عدد حصص لكل مستثمر (0 = لا يوجد حد)'
     )
 
+    max_investors = fields.Integer(
+        string='Max Investors',
+        default=0,
+        help='الحد الأقصى لعدد المستثمرين في المشروع (0 = لا يوجد حد)'
+    )
+
+    active_investor_count = fields.Integer(
+        string='Active Investors Count',
+        compute='_compute_active_investor_count',
+        help='عدد المستثمرين النشطين حالياً في المشروع'
+    )
+
     # ===== Return 1 - One-time Return =====
     return_1_amount = fields.Float(
         string='Return 1 Amount',
@@ -156,6 +168,31 @@ class InvestmentProject(models.Model):
     description = fields.Text(string='Description')
 
     # ===== Compute Methods =====
+    def _compute_active_investor_count(self):
+        for project in self:
+            # Count subscriptions that occupy an investor slot (non-terminal states)
+            active_states = ('draft', 'reviewed', 'pending_approval', 'approved', 'paid', 'active')
+            project.active_investor_count = self.env['investment.subscription'].search_count([
+                ('project_id', '=', project.id),
+                ('state', 'in', active_states),
+            ])
+
+    def _get_active_investor_count(self):
+        """Return the active investor count (usable from other models)."""
+        active_states = ('draft', 'reviewed', 'pending_approval', 'approved', 'paid', 'active')
+        return self.env['investment.subscription'].search_count([
+            ('project_id', '=', self.id),
+            ('state', 'in', active_states),
+        ])
+
+    def _check_max_investors(self):
+        """Check if the project can accept more investors. Returns True if OK, False if full."""
+        self.ensure_one()
+        if self.max_investors <= 0:
+            return True
+        current_count = self._get_active_investor_count()
+        return current_count < self.max_investors
+
     @api.depends('return_2_grace_months')
     def _compute_grace_period(self):
         for project in self:

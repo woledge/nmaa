@@ -8,8 +8,35 @@
     <menuitem id="menu_investment_project" name="Projects" parent="menu_investment_root" action="action_investment_project" sequence="2"/>
     <menuitem id="menu_investment_subscription" name="Investments" parent="menu_investment_root" action="action_investment_subscription" sequence="4"/>
     <menuitem id="menu_investment_membership" name="Memberships" parent="menu_investment_root" action="action_investment_membership" sequence="3"/>
+    <record id="action_terminated_memberships" model="ir.actions.act_window">
+        <field name="name">Terminated Memberships</field>
+        <field name="res_model">investment.membership</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'terminated')]</field>
+        <field name="context">{'search_default_state': 'terminated'}</field>
+    </record>
+
+    <record id="action_terminated_subscriptions" model="ir.actions.act_window">
+        <field name="name">Terminated Subscriptions</field>
+        <field name="res_model">investment.subscription</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'terminated')]</field>
+        <field name="context">{'search_default_state': 'terminated'}</field>
+    </record>
+
+    <menuitem id="menu_investment_termination" name="Terminations" parent="menu_investment_root" sequence="7"/>
+    <menuitem id="menu_terminated_memberships" name="Terminated Memberships" parent="menu_investment_termination" action="action_terminated_memberships" sequence="1"/>
+    <menuitem id="menu_terminated_subscriptions" name="Terminated Subscriptions" parent="menu_investment_termination" action="action_terminated_subscriptions" sequence="2"/>
+
+    <record id="action_terminate_reasons" model="ir.actions.act_window">
+        <field name="name">Termination Reasons</field>
+        <field name="res_model">terminate.reason</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
     <menuitem id="menu_investment_configuration" name="Configuration" parent="menu_investment_root" sequence="100"/>
     <menuitem id="menu_investment_settings" name="Settings" parent="menu_investment_configuration" action="action_investment_config_settings" sequence="1"/>
+    <menuitem id="menu_terminate_reasons" name="Termination Reasons" parent="menu_investment_configuration" action="action_terminate_reasons" sequence="2"/>
 
 
 

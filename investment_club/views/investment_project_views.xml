@@ -10,6 +10,8 @@
                 <field name="club_id"/>
                 <field name="analytic_account_id"/>
                 <field name="share_value"/>
+                <field name="max_investors"/>
+                <field name="active_investor_count"/>
                 <field name="contract_start_date"/>
                 <field name="contract_end_date"/>
                 <field name="state"/>
@@ -41,10 +43,12 @@
                         <group>
                             <field name="club_id"/>
                             <field name="analytic_account_id"/>
-                        </group>
-                        <group>
                             <field name="share_value"/>
                             <field name="max_shares_per_investor"/>
+                        </group>
+                        <group>
+                            <field name="max_investors"/>
+                            <field name="active_investor_count"/>
                         </group>
                     </group>
                     

@@ -4,7 +4,7 @@
     <t t-call="web.html_container">
       <t t-foreach="docs" t-as="doc">
         <t t-call="web.basic_layout">
-          <div class="page" direction="rtl" style="dir: rtl;">
+          <div class="page" direction="rtl" style="dir: rtl; border: 2px solid #2c3e50; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
             <!-- Title -->
             <h2 class="text-center" style="margin-bottom: 30px;" t-esc="doc.contract_title_name.name or 'Contract'"/>
             <!-- Contract Info -->

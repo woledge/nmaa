@@ -142,6 +142,13 @@ class InvestmentSubscription(models.Model):
         store=True
     )
 
+    max_investors = fields.Integer(
+        related='project_id.max_investors',
+        string='Max Investors',
+        readonly=True,
+        store=True
+    )
+
     # --- الحقول القديمة (للتوافق) ---
     grace_period_months = fields.Integer(
         related='project_id.grace_period_months',
@@ -406,6 +413,24 @@ class InvestmentSubscription(models.Model):
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('investment.subscription') or 'New'
+
+            # Check max investors limit before creating subscription
+            project_id = vals.get('project_id')
+            if project_id:
+                project = self.env['investment.project'].browse(project_id)
+                if project.max_investors > 0:
+                    active_states = ('draft', 'reviewed', 'pending_approval', 'approved', 'paid', 'active')
+                    current_count = self.env['investment.subscription'].search_count([
+                        ('project_id', '=', project_id),
+                        ('state', 'in', active_states),
+                    ])
+                    if current_count >= project.max_investors:
+                        raise ValidationError(_(
+                            'Maximum number of investors reached for this project!\n'
+                            'الحد الأقصى لعدد المستثمرين (%s) في هذا المشروع (%s)已被达到!\n'
+                            'لا يمكن إضافة مستثمرين جدد حتى يقوم أحد المستثمرين الحاليين بفسخ اشتراكه.'
+                        ) % (project.max_investors, project.name))
+
         return super(InvestmentSubscription, self).create(vals_list)
 
     def copy(self, default=None):
@@ -416,6 +441,24 @@ class InvestmentSubscription(models.Model):
         default['payment_state'] = 'not_paid'
         default['state'] = 'draft'
         return super().copy(default)
+
+    def write(self, vals):
+        # Check max investors when changing project_id on existing subscription
+        if vals.get('project_id'):
+            new_project = self.env['investment.project'].browse(vals['project_id'])
+            if new_project.max_investors > 0:
+                active_states = ('draft', 'reviewed', 'pending_approval', 'approved', 'paid', 'active')
+                current_count = self.env['investment.subscription'].search_count([
+                    ('project_id', '=', new_project.id),
+                    ('state', 'in', active_states),
+                ])
+                if current_count >= new_project.max_investors:
+                    raise ValidationError(_(
+                        'Maximum number of investors reached for this project!\n'
+                        'الحد الأقصى لعدد المستثمرين (%s) في هذا المشروع (%s) تم الوصول إليه!\n'
+                        'لا يمكن إضافة مستثمرين جدد حتى يقوم أحد المستثمرين الحاليين بفسخ اشتراكه.'
+                    ) % (new_project.max_investors, new_project.name))
+        return super(InvestmentSubscription, self).write(vals)
 
     # ===== Validation =====
     @api.constrains('share_count', 'max_shares_per_investor')

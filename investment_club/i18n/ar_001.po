@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* investment_club
+#       * investment_club
 #
 msgid ""
 msgstr ""
@@ -1249,3 +1249,34 @@ msgstr ""
 #: model:ir.model.fields,help:investment_club.field_investment_actual_return__period_name
 msgid "مثال: يناير 2026 أو الربع الأول 2026"
 msgstr ""
+
+#. module: investment_club
+#: model:ir.model.fields,field_description:investment_club.field_investment_project__max_investors
+msgid "Max Investors"
+msgstr "الحد الأقصى للمستثمرين"
+
+#. module: investment_club
+#: model:ir.model.fields,help:investment_club.field_investment_project__max_investors
+msgid "الحد الأقصى لعدد المستثمرين في المشروع (0 = لا يوجد حد)"
+msgstr ""
+
+#. module: investment_club
+#: model:ir.model.fields,field_description:investment_club.field_investment_project__active_investor_count
+msgid "Active Investors Count"
+msgstr "عدد المستثمرين النشطين"
+
+#. module: investment_club
+#: model:ir.model.fields,help:investment_club.field_investment_project__active_investor_count
+msgid "عدد المستثمرين النشطين حالياً في المشروع"
+msgstr ""
+
+#. module: investment_club
+#: model:ir.model.fields,field_description:investment_club.field_investment_subscription__max_investors
+msgid "Max Investors"
+msgstr "الحد الأقصى للمستثمرين"
+
+#. module: investment_club
+#: code:addons/investment_club/models/investment_subscription.py:0
+#, python-format
+msgid "Maximum number of investors reached for this project!\nالحد الأقصى لعدد المستثمرين (%s) في هذا المشروع (%s) تم الوصول إليه!\nلا يمكن إضافة مستثمرين جدد حتى يقوم أحد المستثمرين الحاليين بفسخ اشتراكه."
+msgstr "تم الوصول للحد الأقصى لعدد المستثمرين في هذا المشروع!\nالحد الأقصى (%s) في المشروع (%s) تم الوصول إليه!\nلا يمكن إضافة مستثمرين جدد حتى يقوم أحد المستثمرين الحاليين بفسخ اشتراكه."

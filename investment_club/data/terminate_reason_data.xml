@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="terminate_reason_1" model="terminate.reason">
+        <field name="name">طلب العميل</field>
+        <field name="type">both</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="terminate_reason_2" model="terminate.reason">
+        <field name="name">عدم الالتزام بالسداد</field>
+        <field name="type">membership</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="terminate_reason_3" model="terminate.reason">
+        <field name="name">مخالفة شروط العقد</field>
+        <field name="type">both</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="terminate_reason_4" model="terminate.reason">
+        <field name="name">نقل الملكية</field>
+        <field name="type">both</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="terminate_reason_5" model="terminate.reason">
+        <field name="name">حالة وفاة</field>
+        <field name="type">both</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="terminate_reason_6" model="terminate.reason">
+        <field name="name">انتهاء مدة العقد</field>
+        <field name="type">subscription</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="terminate_reason_7" model="terminate.reason">
+        <field name="name">إعادة هيكلة المحفظة</field>
+        <field name="type">subscription</field>
+        <field name="sequence">70</field>
+    </record>
+</odoo>

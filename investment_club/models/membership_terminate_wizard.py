@@ -131,9 +131,10 @@ class MembershipTerminateWizard(models.TransientModel):
     )
 
     # ===== Notes =====
-    reason = fields.Text(
+    reason = fields.Many2one(
+        'terminate.reason',
         string='Termination Reason',
-        required=True
+        required=True,
     )
 
     notes = fields.Text(string='Additional Notes')
@@ -401,7 +402,7 @@ class MembershipTerminateWizard(models.TransientModel):
         membership.write({
             'state': 'terminated',
             'termination_date': fields.Date.today(),
-            'termination_reason': self.reason,
+            'termination_reason': self.reason.name,
             'termination_refund_amount': self.refund_amount,
             'termination_deduction': self.actual_deduction,
         })
@@ -450,7 +451,7 @@ class MembershipTerminateWizard(models.TransientModel):
                 '<li>مبلغ الاسترداد للعميل: <b>%s</b></li>'
             ) % self.refund_amount
 
-        summary += _('<li>السبب: <b>%s</b></li>') % self.reason
+        summary += _('<li>السبب: <b>%s</b></li>') % self.reason.name
 
         if company_income_move:
             summary += _(

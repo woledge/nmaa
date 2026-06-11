@@ -18,3 +18,4 @@ from . import investment_reject_wizard
 from . import membership_terminate_wizard
 from . import subscription_terminate_wizard
 from . import investor_death_wizard
+from . import terminate_reason

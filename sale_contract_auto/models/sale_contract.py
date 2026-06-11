@@ -147,6 +147,20 @@ class SaleContract(models.Model):
 
     company_representative = fields.Char(string='Authorized Signatory')
 
+    contract_printed = fields.Boolean(
+        string='Contract Printed',
+        default=False,
+        tracking=True,
+        help='Indicates whether the contract has been printed'
+    )
+
+    contract_print_date = fields.Date(
+        string='Contract Print Date',
+        readonly=True,
+        copy=False,
+        tracking=True
+    )
+
     access_token = fields.Char(
         'Security Token',
         copy=False
@@ -254,6 +268,19 @@ class SaleContract(models.Model):
         self.ensure_one()
         if self.state == 'cancelled':
             raise UserError("Cannot print a cancelled contract.")
+        self.write({
+            'contract_printed': True,
+            'contract_print_date': fields.Date.today(),
+        })
+        for model in ['investment.subscription', 'investment.membership']:
+            if model not in self.env:
+                continue
+            related = self.env[model].sudo().search([('contract_id', '=', self.id)])
+            if related:
+                related.write({
+                    'contract_printed': True,
+                    'contract_print_date': fields.Date.today(),
+                })
         return self.env.ref(
             'sale_contract_auto.action_print_sale_contract'
         ).report_action(self)

@@ -1,7 +1,7 @@
 # investment_club/__manifest__.py
 {
     'name': 'Investment Clubs Management',
-    'version': '18.0.9.0.0',
+    'version': '18.0.10.0.0',
     'category': 'Investment',
     'summary': 'Complete investment management system with Unified Return System',
     'description': """
@@ -35,6 +35,7 @@
         'security/ir.model.access.csv',
         'data/sequences.xml',
         'data/cron_data.xml',
+        'data/terminate_reason_data.xml',
         'views/contact_view.xml',
         'views/investment_club_views.xml',
         'views/investment_project_views.xml',

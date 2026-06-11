@@ -99,6 +99,8 @@
                         <group string="Document Settings">
                             <field name="contract_template_id"/>
                             <field name="company_representative"/>
+                            <field name="contract_printed" widget="boolean_toggle" readonly="1" invisible="1"/>
+                            <field name="contract_print_date" readonly="1" invisible="1"/>
                         </group>
 
                     </group>
@@ -287,6 +289,22 @@
                 </button>
             </xpath>
 
+        </field>
+    </record>
+
+    <record id="view_order_search_inherit_card_id" model="ir.ui.view">
+        <field name="name">sale.order.search.card_id</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="partner_id"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <field name="partner_id"
+                       filter_domain="[('partner_id.card_id', 'ilike', self)]"
+                       string="National ID"/>
+            </xpath>
         </field>
     </record>
 
