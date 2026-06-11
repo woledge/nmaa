@@ -3,12 +3,21 @@
 .o_investment_dashboard {
     --card-radius: 12px;
     --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .o_dashboard_content {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* Inner .o_content from Layout needs overflow:auto since it's not a direct child of .o_action */
+.o_investment_dashboard > .o_content {
+    overflow: auto;
 }
 
 .o_dashboard_loading {
@@ -187,6 +196,15 @@
 
 .o_dash_table_card tr:last-child td {
     border-bottom: none;
+}
+
+.o_dash_clickable_row {
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.o_dash_clickable_row:hover {
+    background: #f5f6fa;
 }
 
 .o_dash_table_card td:first-child {

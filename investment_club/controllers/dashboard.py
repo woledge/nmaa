@@ -110,6 +110,9 @@ class InvestmentDashboardController(http.Controller):
                 })
 
         return {
+            # Date boundaries for filters
+            'month_start': first_of_month.strftime('%Y-%m-%d'),
+            'month_end': first_of_next.strftime('%Y-%m-%d'),
             # Core
             'total_clubs': total_clubs,
             'total_projects': Project.search_count([('state', '!=', 'closed')]),

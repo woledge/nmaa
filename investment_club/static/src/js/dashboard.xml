@@ -99,23 +99,23 @@
                         <div class="o_dash_table_card">
                             <h5><i class="fa fa-users text-success me-2"/> Membership Status</h5>
                             <table>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.membership', 'Active Memberships', [['state', '=', 'active']])">
                                     <td><span class="o_status_dot o_dot_active"/> Active</td>
                                     <td><span class="o_status_badge o_badge_success" t-esc="state.stats.active_memberships"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.membership', 'Terminated Memberships', [['state', '=', 'terminated']])">
                                     <td><span class="o_status_dot o_dot_danger"/> Terminated</td>
                                     <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.terminated_memberships"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.membership', 'Expired Memberships', [['state', '=', 'expired']])">
                                     <td><span class="o_status_dot o_dot_warning"/> Expired</td>
                                     <td><span class="o_status_badge o_badge_warning" t-esc="state.stats.expired_memberships"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.membership', 'Renewals This Month', [['next_renewal_date', '>=', state.stats.month_start], ['next_renewal_date', '&lt;', state.stats.month_end], ['state', '=', 'active']])">
                                     <td><span class="o_status_dot o_dot_info"/> Renewals This Month</td>
                                     <td><span class="o_status_badge o_badge_info" t-esc="state.stats.renewals_this_month"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.membership', 'Overdue Renewals', [['renewal_status', 'in', ['due', 'overdue']], ['state', '=', 'active']])">
                                     <td><span class="o_status_dot o_dot_danger"/> Overdue Renewals</td>
                                     <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.overdue_renewals"/></td>
                                 </tr>
@@ -125,19 +125,19 @@
                         <div class="o_dash_table_card">
                             <h5><i class="fa fa-line-chart text-info me-2"/> Subscription Status</h5>
                             <table>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.subscription', 'Active Subscriptions', [['state', '=', 'active']])">
                                     <td><span class="o_status_dot o_dot_active"/> Active</td>
                                     <td><span class="o_status_badge o_badge_success" t-esc="state.stats.active_subscriptions"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.subscription', 'Terminated Subscriptions', [['state', '=', 'terminated']])">
                                     <td><span class="o_status_dot o_dot_danger"/> Terminated</td>
                                     <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.terminated_subscriptions"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.actual.return', 'Paid Returns', [['state', '=', 'paid']])">
                                     <td><span class="o_status_dot o_dot_info"/> Returns Paid</td>
                                     <td><span class="o_status_badge o_badge_info" t-esc="state.stats.paid_returns"/></td>
                                 </tr>
-                                <tr>
+                                <tr class="o_dash_clickable_row" t-on-click="() => this.openFilteredModel('investment.actual.return', 'Due Returns', [['state', '=', 'draft']])">
                                     <td><span class="o_status_dot o_dot_warning"/> Returns Due</td>
                                     <td><span class="o_status_badge o_badge_warning" t-esc="state.stats.due_returns"/></td>
                                 </tr>
@@ -231,7 +231,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr t-foreach="state.stats.recent_memberships" t-as="m" t-key="m.id">
+                                    <tr t-foreach="state.stats.recent_memberships" t-as="m" t-key="m.id" class="o_dash_clickable_row" t-on-click="() => this.openModel('investment.membership', m.name)">
                                         <td t-esc="m.name"/>
                                         <td t-esc="m.partner"/>
                                         <td><span class="o_state_label" t-att-class="'o_state_' + m.state" t-esc="m.state"/></td>
@@ -256,7 +256,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr t-foreach="state.stats.recent_subscriptions" t-as="s" t-key="s.id">
+                                    <tr t-foreach="state.stats.recent_subscriptions" t-as="s" t-key="s.id" class="o_dash_clickable_row" t-on-click="() => this.openModel('investment.subscription', s.name)">
                                         <td t-esc="s.name"/>
                                         <td t-esc="s.partner"/>
                                         <td t-esc="formatAmount(s.amount, state.stats.currency_symbol, state.stats.currency_position)"/>

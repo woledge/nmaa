@@ -44,6 +44,18 @@ class InvestmentDashboard extends Component {
         });
     }
 
+    openFilteredModel(model, name, domain) {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: name || "",
+            res_model: model,
+            domain: domain,
+            views: [[false, "list"], [false, "form"]],
+            view_mode: "list,form",
+            target: "current",
+        });
+    }
+
     formatAmount(amount, symbol, position) {
         if (position === "before") {
             return `${symbol} ${amount.toLocaleString()}`;
