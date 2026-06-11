@@ -1,0 +1,347 @@
+/* Investment Dashboard Styles */
+
+.o_investment_dashboard {
+    --card-radius: 12px;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.o_dashboard_content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.o_dashboard_loading {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Summary Bar */
+.o_dash_summary {
+    display: flex;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--card-radius);
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+}
+
+.o_dash_summary_item {
+    flex: 1;
+    text-align: center;
+    padding: 20px 16px;
+    color: #fff;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.o_dash_summary_item:last-child {
+    border-right: none;
+}
+
+.o_dash_number {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.o_dash_summary_item small {
+    display: block;
+    font-size: 12px;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* KPI Cards Row */
+.o_dash_kpi_row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.o_dash_card {
+    border-radius: var(--card-radius);
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.o_dash_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.o_card_clubs {
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+}
+
+.o_card_memberships {
+    background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+}
+
+.o_card_investments {
+    background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+}
+
+.o_card_returns {
+    background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+}
+
+.o_card_partners {
+    background: linear-gradient(135deg, #6f42c1 0%, #4a1a8a 100%);
+}
+
+.o_card_paid {
+    background: linear-gradient(135deg, #20c997 0%, #12876a 100%);
+}
+
+.o_card_due {
+    background: linear-gradient(135deg, #fd7e14 0%, #c05a02 100%);
+}
+
+.o_card_active_projects {
+    background: linear-gradient(135deg, #e83e8c 0%, #b82c6b 100%);
+}
+
+.o_card_label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.8;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.o_card_value {
+    display: block;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.o_card_sub {
+    display: block;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.o_card_icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.o_card_icon i {
+    font-size: 22px;
+}
+
+/* Status Tables */
+.o_dash_tables_row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.o_dash_table_card {
+    background: #fff;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+}
+
+.o_dash_table_card h5 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 16px;
+    color: #333;
+}
+
+.o_dash_table_card table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.o_dash_table_card td {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.o_dash_table_card tr:last-child td {
+    border-bottom: none;
+}
+
+.o_dash_table_card td:first-child {
+    font-size: 14px;
+    color: #555;
+}
+
+.o_dash_table_card td:last-child {
+    text-align: right;
+}
+
+.o_status_dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.o_dot_active { background: #28a745; }
+.o_dot_danger { background: #dc3545; }
+.o_dot_warning { background: #ffc107; }
+.o_dot_info { background: #17a2b8; }
+
+.o_status_badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.o_badge_success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
+.o_badge_danger { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+.o_badge_warning { background: rgba(255, 193, 7, 0.1); color: #856404; }
+.o_badge_info { background: rgba(23, 162, 184, 0.1); color: #17a2b8; }
+
+/* Section Card (for top projects) */
+.o_dash_section_card {
+    background: #fff;
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.o_dash_section_card h5 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 16px;
+    color: #333;
+}
+
+/* Full-width table inside cards */
+.o_dash_table_full {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.o_dash_table_full th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    padding: 6px 0;
+    border-bottom: 2px solid #eee;
+}
+
+.o_dash_table_full td {
+    padding: 10px 0;
+    font-size: 13px;
+    color: #444;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.o_dash_table_full tr:last-child td {
+    border-bottom: none;
+}
+
+.o_amount_badge {
+    font-weight: 600;
+    color: #333;
+}
+
+.o_dash_empty {
+    text-align: center !important;
+    color: #aaa !important;
+    padding: 24px 0 !important;
+    font-style: italic;
+}
+
+/* State labels in recent tables */
+.o_state_label {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.o_state_active, .o_state_paid {
+    background: rgba(40, 167, 69, 0.12);
+    color: #28a745;
+}
+
+.o_state_terminated, .o_state_cancelled, .o_state_rejected {
+    background: rgba(220, 53, 69, 0.12);
+    color: #dc3545;
+}
+
+.o_state_draft, .o_state_reviewed {
+    background: rgba(108, 117, 125, 0.12);
+    color: #6c757d;
+}
+
+.o_state_expired {
+    background: rgba(255, 193, 7, 0.12);
+    color: #856404;
+}
+
+.o_state_closed {
+    background: rgba(23, 162, 184, 0.12);
+    color: #17a2b8;
+}
+
+/* Footer */
+.o_dash_footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
+    padding: 8px 4px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .o_dash_kpi_row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .o_dash_tables_row {
+        grid-template-columns: 1fr;
+    }
+    .o_dash_summary_item {
+        padding: 16px 12px;
+    }
+    .o_dash_number {
+        font-size: 22px;
+    }
+    .o_dash_kpi_row {
+        grid-template-columns: 1fr 1fr;
+    }
+}

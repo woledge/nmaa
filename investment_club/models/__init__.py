@@ -19,3 +19,4 @@ from . import membership_terminate_wizard
 from . import subscription_terminate_wizard
 from . import investor_death_wizard
 from . import terminate_reason
+from . import dashboard

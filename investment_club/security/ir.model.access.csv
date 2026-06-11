@@ -29,3 +29,6 @@ access_investor_death_wizard_manager,Investor Death Wizard Manager,model_investo
 access_terminate_reason,Terminate Reason,model_terminate_reason,group_investment_access,1,1,1,1
 access_terminate_reason_user,Terminate Reason User,model_terminate_reason,group_investment_user,1,0,0,0
 access_terminate_reason_manager,Terminate Reason Manager,model_terminate_reason,group_investment_manager,1,1,1,1
+access_investment_dashboard,Dashboard,model_investment_dashboard,group_investment_access,1,1,1,1
+access_investment_dashboard_user,Dashboard User,model_investment_dashboard,group_investment_user,1,0,0,0
+access_investment_dashboard_manager,Dashboard Manager,model_investment_dashboard,group_investment_manager,1,1,1,1

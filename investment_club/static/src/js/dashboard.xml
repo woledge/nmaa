@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+<t t-name="investment_club.Dashboard">
+    <div class="o_investment_dashboard o_dashboards">
+        <Layout display="display">
+            <t t-set-slot="control-panel-buttons">
+                <button class="btn btn-primary btn-sm" t-on-click="fetchStats" title="Refresh">
+                    <i class="fa fa-refresh me-1"/>
+                    Refresh
+                </button>
+            </t>
+            <t t-if="state.loading">
+                <div class="o_dashboard_loading text-center py-5">
+                    <i class="fa fa-spinner fa-spin fa-3x text-muted"/>
+                    <p class="mt-3 text-muted">Loading dashboard...</p>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="o_dashboard_content">
+                    <!-- Summary Bar -->
+                    <div class="o_dash_summary">
+                        <div class="o_dash_summary_item">
+                            <span t-esc="state.stats.total_clubs" class="o_dash_number"/>
+                            <small>Clubs</small>
+                        </div>
+                        <div class="o_dash_summary_item">
+                            <span t-esc="state.stats.total_memberships" class="o_dash_number"/>
+                            <small>Memberships</small>
+                        </div>
+                        <div class="o_dash_summary_item">
+                            <span t-esc="state.stats.total_subscriptions" class="o_dash_number"/>
+                            <small>Investments</small>
+                        </div>
+                        <div class="o_dash_summary_item">
+                            <span t-esc="state.stats.total_returns" class="o_dash_number"/>
+                            <small>Returns</small>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards Row -->
+                    <div class="o_dash_kpi_row">
+                        <div class="o_dash_card o_card_clubs" t-on-click="() => this.openModel('investment.club', 'Clubs')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">CLUBS</span>
+                                <span class="o_card_value" t-esc="state.stats.total_clubs"/>
+                                <span class="o_card_sub">Active Clubs</span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-building-o"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_memberships" t-on-click="() => this.openModel('investment.membership', 'Memberships')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">MEMBERSHIPS</span>
+                                <span class="o_card_value" t-esc="state.stats.total_memberships"/>
+                                <span class="o_card_sub">
+                                    <t t-esc="state.stats.active_memberships"/> Active ·
+                                    <t t-esc="state.stats.overdue_renewals"/> Overdue
+                                </span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-users"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_investments" t-on-click="() => this.openModel('investment.subscription', 'Investments')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">INVESTMENTS</span>
+                                <span class="o_card_value" t-esc="state.stats.total_subscriptions"/>
+                                <span class="o_card_sub">
+                                    <t t-esc="state.stats.active_subscriptions"/> Active ·
+                                    <t t-esc="formatAmount(state.stats.total_invested, state.stats.currency_symbol, state.stats.currency_position)"/> Total
+                                </span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-line-chart"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_returns" t-on-click="() => this.openModel('investment.actual.return', 'Returns')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">RETURNS</span>
+                                <span class="o_card_value" t-esc="state.stats.total_returns"/>
+                                <span class="o_card_sub">
+                                    <t t-esc="state.stats.paid_returns"/> Paid ·
+                                    <t t-esc="state.stats.due_returns"/> Due
+                                </span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-money"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Tables Row -->
+                    <div class="o_dash_tables_row">
+                        <div class="o_dash_table_card">
+                            <h5><i class="fa fa-users text-success me-2"/> Membership Status</h5>
+                            <table>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_active"/> Active</td>
+                                    <td><span class="o_status_badge o_badge_success" t-esc="state.stats.active_memberships"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_danger"/> Terminated</td>
+                                    <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.terminated_memberships"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_warning"/> Expired</td>
+                                    <td><span class="o_status_badge o_badge_warning" t-esc="state.stats.expired_memberships"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_info"/> Renewals This Month</td>
+                                    <td><span class="o_status_badge o_badge_info" t-esc="state.stats.renewals_this_month"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_danger"/> Overdue Renewals</td>
+                                    <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.overdue_renewals"/></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="o_dash_table_card">
+                            <h5><i class="fa fa-line-chart text-info me-2"/> Subscription Status</h5>
+                            <table>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_active"/> Active</td>
+                                    <td><span class="o_status_badge o_badge_success" t-esc="state.stats.active_subscriptions"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_danger"/> Terminated</td>
+                                    <td><span class="o_status_badge o_badge_danger" t-esc="state.stats.terminated_subscriptions"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_info"/> Returns Paid</td>
+                                    <td><span class="o_status_badge o_badge_info" t-esc="state.stats.paid_returns"/></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="o_status_dot o_dot_warning"/> Returns Due</td>
+                                    <td><span class="o_status_badge o_badge_warning" t-esc="state.stats.due_returns"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Financial Overview Row -->
+                    <div class="o_dash_kpi_row">
+                        <div class="o_dash_card o_card_partners" t-on-click="() => this.openModel('res.partner', 'Partners')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">INVESTORS</span>
+                                <span class="o_card_value" t-esc="state.stats.total_partners"/>
+                                <span class="o_card_sub">Total Investors</span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-user-circle-o"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_paid" t-on-click="() => this.openModel('investment.actual.return', 'Returns')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">PAID RETURNS</span>
+                                <span class="o_card_value" t-esc="formatAmount(state.stats.total_paid_amount, state.stats.currency_symbol, state.stats.currency_position)"/>
+                                <span class="o_card_sub">Total Amount Paid</span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-check-circle-o"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_due" t-on-click="() => this.openModel('investment.actual.return', 'Returns')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">DUE RETURNS</span>
+                                <span class="o_card_value" t-esc="formatAmount(state.stats.total_due_amount, state.stats.currency_symbol, state.stats.currency_position)"/>
+                                <span class="o_card_sub">Total Amount Due</span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-clock-o"/>
+                            </div>
+                        </div>
+
+                        <div class="o_dash_card o_card_active_projects" t-on-click="() => this.openModel('investment.project', 'Projects')">
+                            <div class="o_card_content">
+                                <span class="o_card_label">ACTIVE PROJECTS</span>
+                                <span class="o_card_value" t-esc="state.stats.project_states.active"/>
+                                <span class="o_card_sub">
+                                    <t t-esc="state.stats.project_states.draft"/> Draft ·
+                                    <t t-esc="state.stats.project_states.closed"/> Closed
+                                </span>
+                            </div>
+                            <div class="o_card_icon">
+                                <i class="fa fa-tasks"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Projects by Investment -->
+                    <div class="o_dash_section_card">
+                        <h5><i class="fa fa-trophy text-warning me-2"/> Top Projects by Investment</h5>
+                        <table class="o_dash_table_full">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Total Invested</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="state.stats.top_projects" t-as="p" t-key="p.id">
+                                    <td t-esc="p.name"/>
+                                    <td><span class="o_amount_badge" t-esc="formatAmount(p.total_amount, state.stats.currency_symbol, state.stats.currency_position)"/></td>
+                                </tr>
+                                <tr t-if="!state.stats.top_projects.length">
+                                    <td colspan="2" class="o_dash_empty">No projects with investments yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Recent Records Row -->
+                    <div class="o_dash_tables_row">
+                        <div class="o_dash_table_card">
+                            <h5><i class="fa fa-clock-o text-primary me-2"/> Recent Memberships</h5>
+                            <table class="o_dash_table_full">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Investor</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.stats.recent_memberships" t-as="m" t-key="m.id">
+                                        <td t-esc="m.name"/>
+                                        <td t-esc="m.partner"/>
+                                        <td><span class="o_state_label" t-att-class="'o_state_' + m.state" t-esc="m.state"/></td>
+                                        <td t-esc="m.date"/>
+                                    </tr>
+                                    <tr t-if="!state.stats.recent_memberships.length">
+                                        <td colspan="4" class="o_dash_empty">No memberships yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="o_dash_table_card">
+                            <h5><i class="fa fa-clock-o text-primary me-2"/> Recent Investments</h5>
+                            <table class="o_dash_table_full">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Investor</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="state.stats.recent_subscriptions" t-as="s" t-key="s.id">
+                                        <td t-esc="s.name"/>
+                                        <td t-esc="s.partner"/>
+                                        <td t-esc="formatAmount(s.amount, state.stats.currency_symbol, state.stats.currency_position)"/>
+                                        <td><span class="o_state_label" t-att-class="'o_state_' + s.state" t-esc="s.state"/></td>
+                                    </tr>
+                                    <tr t-if="!state.stats.recent_subscriptions.length">
+                                        <td colspan="4" class="o_dash_empty">No investments yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="o_dash_footer">
+                        <span><i class="fa fa-tasks me-1"/> Total Partners: <strong t-esc="state.stats.total_partners"/></span>
+                        <span>Last updated: <strong>Just now</strong></span>
+                    </div>
+                </div>
+            </t>
+        </Layout>
+    </div>
+</t>
+
+</templates>

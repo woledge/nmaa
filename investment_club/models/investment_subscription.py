@@ -540,6 +540,7 @@ class InvestmentSubscription(models.Model):
             'partner_id': self.partner_id.id,
             'investment_subscription_id': self.id,
             'journal_id': self.payment_journal_id.id,
+
             'amount': self.amount,
             'currency_id': self.currency_id.id,
             'date': fields.Date.today(),
@@ -548,6 +549,11 @@ class InvestmentSubscription(models.Model):
 
         payment = self.env['account.payment'].create(payment_vals)
         payment.action_post()
+
+        if self.project_id.analytic_account_id:
+            payment.move_id.line_ids.write({
+                'analytic_distribution': {str(self.project_id.analytic_account_id.id): 100},
+            })
 
         self.write({
             'payment_id': payment.id,

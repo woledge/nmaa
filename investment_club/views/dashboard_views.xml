@@ -1,23 +1,11 @@
-
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- investment_club/views/dashboard_views.xml -->
-<record id="investment_dashboard" model="ir.ui.view">
-    <field name="name">Investment Dashboard</field>
-    <field name="model">board.board</field>
-    <field name="type">form</field>
-    <field name="arch" type="xml">
-        <form string="Investment Dashboard">
-            <board style="2-1">
-                <column>
-                    <action string="Active Clubs" name="%(action_club_kanban)d"/>
-                    <action string="Monthly Returns" name="%(action_return_graph)d"/>
-                </column>
-                <column>
-                    <action string="Incomplete Contracts" name="%(action_incomplete_transactions)d"/>
-                    <action string="Revenue Analysis" name="%(action_revenue_report)d"/>
-                </column>
-            </board>
-        </form>
-    </field>
-</record>
+
+    <!-- Dashboard Client Action -->
+    <record id="client_action_investment_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">investment_dashboard</field>
+        <field name="target">main</field>
+    </record>
+
 </odoo>

@@ -1,7 +1,7 @@
 # investment_club/__manifest__.py
 {
     'name': 'Investment Clubs Management',
-    'version': '18.0.10.0.0',
+    'version': '18.0.11.0.0',
     'category': 'Investment',
     'summary': 'Complete investment management system with Unified Return System',
     'description': """
@@ -29,7 +29,7 @@
     """,
     'author': 'Woledge',
     'website': '',
-    'depends': ['base', 'mail', 'account', 'analytic', 'product', 'contacts', 'crm', 'sale_contract_auto'],
+    'depends': ['base', 'mail', 'account', 'analytic', 'product', 'contacts', 'crm', 'sale_contract_auto', 'web'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -42,6 +42,7 @@
         'views/membership_views.xml',
         'views/investment_subscription_views.xml',
         'views/actual_return_views.xml',
+        'views/dashboard_views.xml',
         'views/crm_lead_views.xml',
         'views/contact_codes_view.xml',
         'views/res_config_settings_views.xml',
@@ -57,6 +58,13 @@
         'reports/project_profit_report.xml',
         'reports/reports_menu.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'investment_club/static/src/js/dashboard.js',
+            'investment_club/static/src/js/dashboard.xml',
+            'investment_club/static/src/css/dashboard.css',
+        ],
+    },
     'installable': True,
     'application': True,
     'auto_install': False,
