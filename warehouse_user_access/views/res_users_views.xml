@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- إضافة حقل المستودعات في فورم اليوزر (من الإعدادات) -->
+    <record id="view_users_form_warehouse" model="ir.ui.view">
+        <field name="name">res.users.form.warehouse</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Warehouse Access">
+                    <group>
+                        <field name="warehouse_ids"
+                               widget="many2many_tags"
+                               domain="[('company_id', '=', company_id)]"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- إضافة حقل المستودعات في فورم Preferences (اليوزر من القائمة العلوية) -->
+    <record id="view_users_preferences_warehouse" model="ir.ui.view">
+        <field name="name">res.users.preferences.warehouse</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tz']" position="after">
+                <field name="warehouse_ids"
+                       widget="many2many_tags"
+                       domain="[('company_id', '=', company_id)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
