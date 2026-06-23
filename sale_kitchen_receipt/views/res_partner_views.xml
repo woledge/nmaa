@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- إضافة حقول بيانات التوصيل في فورم الـ Contact (res.partner) -->
+    <!-- ============================================================ -->
+    <record id="view_partner_form_inherit_kitchen" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.kitchen.receipt</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- إضافة صفحة جديدة في النوتبوك لبيانات التوصيل -->
+            <xpath expr="//notebook" position="inside">
+                <page string="بيانات التوصيل" name="delivery_info">
+                    <group>
+                        <field name="x_building_floor" string="العمارة / الدور"/>
+                        <field name="x_landmark" string="علامة مميزة"/>
+                        <field name="x_driver_name" string="اسم الطيار"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
