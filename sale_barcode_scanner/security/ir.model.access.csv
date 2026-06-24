@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sale_order_barcode,access_sale_order_barcode,sale.model_sale_order,sales_team.group_sale_salesman,1,1,1,0
+access_sale_order_line_barcode,access_sale_order_line_barcode,sale.model_sale_order_line,sales_team.group_sale_salesman,1,1,1,1
+access_product_product_barcode,access_product_product_barcode,product.model_product_product,sales_team.group_sale_salesman,1,0,0,0

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+  <t t-name="sale_barcode_scanner.BarcodeScannerDialog">
+    <Dialog title="'Scan Product Barcode / QR Code'" size="'lg'">
+      <div class="barcode-scanner-container">
+        <div class="scanner-video-container">
+          <video
+            t-ref="videoElement"
+            autoplay="autoplay"
+            playsinline="playsinline"
+            class="scanner-video"
+          />
+          <div t-if="!state.cameraActive" class="scanner-placeholder">
+            <i class="fa fa-camera fa-3x" />
+            <p>Click "Start Camera" to begin scanning</p>
+          </div>
+          <div t-if="state.scanning" class="scanner-overlay">
+            <div class="scanner-line" />
+          </div>
+        </div>
+
+        <div class="scanner-controls mt-3">
+          <button
+            t-if="!state.cameraActive"
+            class="btn btn-primary btn-lg w-100"
+            t-on-click="() => this.startCamera()">
+            <i class="fa fa-camera" />
+            Start Camera
+          </button>
+          <button
+            t-if="state.cameraActive"
+            class="btn btn-warning btn-lg w-100"
+            t-on-click="() => this.stopCamera()">
+            <i class="fa fa-stop" />
+            Stop Camera
+          </button>
+        </div>
+
+        <div class="manual-barcode-entry mt-4">
+          <h5>Or Enter Barcode Manually</h5>
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control form-control-lg"
+              placeholder="Enter barcode or QR code..."
+              t-model="state.manualBarcode"
+              t-on-keydown="(ev) => this.onBarcodeKeydown(ev)"
+              autofocus="autofocus"
+            />
+            <button class="btn btn-success" t-on-click="() => this.onManualBarcodeSubmit()">
+              <i class="fa fa-plus" />
+              Add
+            </button>
+          </div>
+        </div>
+
+        <div t-if="state.lastScannedProduct" class="last-scanned-info mt-4 alert alert-success">
+          <h6>
+            <i class="fa fa-check-circle" />
+            Last Scanned Product:
+          </h6>
+          <p class="mb-0">
+            <strong t-esc="state.lastScannedProduct.product_name" />
+            <t t-if="state.lastScannedProduct.product_code">
+              (
+              <t t-esc="state.lastScannedProduct.product_code" />
+              )
+            </t>
+            - Quantity:
+            <strong t-esc="state.lastScannedProduct.quantity" />
+          </p>
+        </div>
+
+        <div class="scanner-instructions mt-3">
+          <small class="text-muted">
+            <i class="fa fa-info-circle" />
+            Point your camera at a barcode or QR code, or enter it manually above.
+                        The product will be automatically added to the sales order.
+          </small>
+        </div>
+      </div>
+
+      <t t-set-slot="footer">
+        <button class="btn btn-secondary" t-on-click="() => this.close()">Close</button>
+      </t>
+    </Dialog>
+  </t>
+
+  <t t-name="sale_barcode_scanner.BarcodeScannerAction">
+    <BarcodeScannerDialog orderId="state.orderId" close="() => this.onClose()" />
+  </t>
+</templates>

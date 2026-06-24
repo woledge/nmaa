@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sale Order Barcode Scanner</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #875a7b;
+            border-bottom: 3px solid #875a7b;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #875a7b;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #666;
+        }
+        .screenshot {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .feature {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #875a7b;
+            border-radius: 3px;
+        }
+        .feature strong {
+            color: #875a7b;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .compatibility {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sale Order Barcode Scanner</h1>
+    <p class="lead">Scan products by Barcode/QRCode in sales orders using mobile camera or webcam.</p>
+
+    <h2>Preview</h2>
+    
+    <h3>Desktop Interface</h3>
+    <img src="https://raw.githubusercontent.com/mohamed-helmy/sale_barcode_scanner/refs/heads/18.0/sale_barcode_scanner/static/description/scanner_dialog.png" alt="Barcode Scanner Dialog - Desktop" class="screenshot" style="width: 100%; height: auto; max-width: 800px;">
+    <p>The scanner interface on desktop showing camera preview and manual barcode entry option.</p>
+
+    <h3>Mobile Interface</h3>
+    <img src="https://raw.githubusercontent.com/mohamed-helmy/sale_barcode_scanner/refs/heads/18.0/sale_barcode_scanner/static/description/scanner_mobile.png" alt="Barcode Scanner Dialog - Mobile" class="screenshot" style="width: 100%; height: auto; max-width: 400px;">
+    <p>The scanner interface on mobile devices with responsive design and touch-friendly controls.</p>
+
+    <h2>Features</h2>
+    
+    <div class="feature">
+        <strong>Easy Product Scanning:</strong> Scan products directly from sales order lines using barcode or QR code
+    </div>
+    
+    <div class="feature">
+        <strong>Mobile & Webcam Support:</strong> Works with mobile device cameras and desktop webcams
+    </div>
+    
+    <div class="feature">
+        <strong>Multiple Barcode Formats:</strong> Supports QR codes, EAN-13, EAN-8, Code-128, Code-39, UPC-A, and UPC-E
+    </div>
+    
+    <div class="feature">
+        <strong>Manual Entry:</strong> Fallback option to enter barcodes manually
+    </div>
+    
+    <div class="feature">
+        <strong>Smart Quantity Management:</strong> Automatically increments quantity if product already exists in order
+    </div>
+    
+    <div class="feature">
+        <strong>Real-time Feedback:</strong> Visual and notification feedback for scanned products
+    </div>
+    
+    <div class="feature">
+        <strong>User-Friendly Interface:</strong> Clean, intuitive scanning interface with camera preview
+    </div>
+
+    <h2>Installation</h2>
+    <ol>
+        <li>Copy this module to your Odoo addons directory</li>
+        <li>Update the app list: Go to <strong>Apps</strong> → <strong>Update Apps List</strong></li>
+        <li>Search for "Sale Order Barcode Scanner"</li>
+        <li>Click <strong>Install</strong></li>
+    </ol>
+
+    <h2>Configuration</h2>
+    <p>No additional configuration needed. The module works out of the box.</p>
+    <div class="warning">
+        <strong>Note:</strong> For camera access, ensure your browser has camera permissions enabled.
+    </div>
+
+    <h2>Usage</h2>
+    <ol>
+        <li>Open a Sales Order (in draft state)</li>
+        <li>Click the <strong>"Scan Barcode"</strong> button in the header</li>
+        <li>Grant camera access when prompted</li>
+        <li>Click <strong>"Start Camera"</strong> to activate scanning</li>
+        <li>Point your camera at a product barcode or QR code</li>
+        <li>The product will be automatically added to the order lines</li>
+        <li>If the product already exists, quantity will be incremented by 1</li>
+    </ol>
+    <p><strong>Alternative Method:</strong> Enter barcode manually in the text field and click "Add"</p>
+
+    <h2>Supported Barcode Types</h2>
+    <ul>
+        <li>QR Code</li>
+        <li>EAN-13</li>
+        <li>EAN-8</li>
+        <li>Code-128</li>
+        <li>Code-39</li>
+        <li>UPC-A</li>
+        <li>UPC-E</li>
+    </ul>
+
+    <h2>Requirements</h2>
+    <ul>
+        <li>Odoo 18.0 (Community and Enterprise editions)</li>
+        <li>sale_management module</li>
+        <li>product module</li>
+        <li>barcodes module</li>
+        <li>Modern browser with camera access and BarcodeDetector API support (Chrome 83+, Edge 83+, or browsers with polyfill)</li>
+    </ul>
+
+    <div class="compatibility">
+        <h2>Compatibility</h2>
+        <ul>
+            <li><strong>Odoo Community Edition:</strong> Fully compatible ✓</li>
+            <li><strong>Odoo Enterprise Edition:</strong> Fully compatible ✓</li>
+            <li><strong>Version:</strong> 18.0</li>
+        </ul>
+        <p>This module works seamlessly with both Odoo Community and Enterprise editions without any additional configuration.</p>
+    </div>
+
+    <h2>Browser Compatibility</h2>
+    <h3>Full Support (Native BarcodeDetector API)</h3>
+    <ul>
+        <li>Google Chrome 83+</li>
+        <li>Microsoft Edge 83+</li>
+        <li>Opera 69+</li>
+    </ul>
+    
+    <h3>Partial Support (Manual entry only)</h3>
+    <ul>
+        <li>Firefox (requires manual barcode entry)</li>
+        <li>Safari (requires manual barcode entry)</li>
+    </ul>
+
+    <h2>Tips</h2>
+    <ul>
+        <li>Ensure adequate lighting for better barcode recognition</li>
+        <li>Hold the barcode steady and at a reasonable distance from camera</li>
+        <li>Use the back camera on mobile devices for better scanning</li>
+        <li>If automatic detection doesn't work, use manual entry as fallback</li>
+        <li>Products must have barcodes set in Product form for scanning to work</li>
+    </ul>
+
+    <h2>Troubleshooting</h2>
+    
+    <h3>Camera not working?</h3>
+    <ul>
+        <li>Check browser permissions for camera access</li>
+        <li>Ensure you're using HTTPS (required for camera access)</li>
+        <li>Try a different browser (Chrome/Edge recommended)</li>
+    </ul>
+
+    <h3>Barcode not detected?</h3>
+    <ul>
+        <li>Ensure the barcode is clear and well-lit</li>
+        <li>Try adjusting the distance from camera</li>
+        <li>Use manual entry as alternative</li>
+    </ul>
+
+    <h3>Product not found?</h3>
+    <ul>
+        <li>Verify the product has the barcode set in Odoo</li>
+        <li>Check barcode format matches product's barcode field</li>
+        <li>Product default_code can also be used as barcode</li>
+    </ul>
+
+    <h2>Credits</h2>
+    <p>
+        <strong>Author:</strong> Mohamed Helmy<br>
+        <strong>Website:</strong> <a href="https://helmy.info">https://helmy.info</a><br>
+        <strong>Version:</strong> 18.0.1.0.0<br>
+        <strong>License:</strong> LGPL-3
+    </p>
+
+    <h2>Maintainer</h2>
+    <p>This module is maintained by Mohamed Helmy.</p>
+    <p>For support, please visit: <a href="https://helmy.info">https://helmy.info</a></p>
+</body>
+</html>

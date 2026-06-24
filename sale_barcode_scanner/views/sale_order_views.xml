@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <record id="view_order_form_barcode_scanner" model="ir.ui.view">
+    <field name="name">sale.order.form.barcode.scanner</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form" />
+    <field name="arch" type="xml">
+      <xpath expr="//header" position="inside">
+        <button
+          name="action_open_barcode_scanner"
+          string="Scan Barcode"
+          type="object"
+          class="btn-primary oe_barcode_scanner_button"
+          icon="fa-barcode"
+          invisible="state in ['sale', 'done', 'cancel']"
+          help="Scan products by Barcode or QR Code using mobile camera or webcam"
+        />
+      </xpath>
+    </field>
+  </record>
+</odoo>
