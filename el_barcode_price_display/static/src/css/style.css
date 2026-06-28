@@ -1,0 +1,136 @@
+/* Barcode Price Display — Standalone CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.center-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Idle state */
+.scan-icon {
+    font-size: 5rem;
+    opacity: 0.3;
+}
+
+.idle-text {
+    font-size: 1.5rem;
+    color: #adb5bd;
+    margin-top: 1rem;
+}
+
+/* Product card */
+.product-card {
+    animation: fadeIn 0.3s ease;
+}
+
+.product-image {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.product-placeholder {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.product-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1rem;
+    max-width: 600px;
+    word-wrap: break-word;
+}
+
+.product-price {
+    font-size: 5rem;
+    font-weight: 800;
+    color: #28a745;
+    line-height: 1;
+}
+
+.product-currency {
+    font-size: 2rem;
+    color: #6c757d;
+    margin-left: 0.3rem;
+}
+
+.product-barcode {
+    font-size: 1rem;
+    color: #adb5bd;
+    margin-top: 1rem;
+}
+
+/* Not found */
+.not-found-icon {
+    font-size: 4rem;
+}
+
+.not-found-text {
+    font-size: 3rem;
+    color: #dc3545;
+    font-weight: 700;
+    margin-top: 1rem;
+}
+
+.not-found-barcode {
+    font-size: 1.5rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+/* Loading */
+.loading {
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .product-name { font-size: 1.8rem; }
+    .product-price { font-size: 3.5rem; }
+    .product-image, .product-placeholder {
+        width: 150px;
+        height: 150px;
+    }
+    .not-found-text { font-size: 2rem; }
+}

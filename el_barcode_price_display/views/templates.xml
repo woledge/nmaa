@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone HTML page served at /price-display -->
+    <!-- Note: no <!DOCTYPE html> in QWeb template — Odoo handles content-type -->
+    <template id="el_barcode_price_display.price_page" name="Barcode Price Display">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>Price Display</title>
+                <link rel="stylesheet" href="/el_barcode_price_display/static/src/css/style.css"/>
+            </head>
+            <body>
+                <div id="app">
+                    <!-- Idle state -->
+                    <div id="idle" class="center-screen">
+                        <div class="scan-icon">📡</div>
+                        <div class="idle-text">Scan a product barcode...</div>
+                    </div>
+                    <!-- Result container (filled by JS) -->
+                    <div id="result" class="center-screen hidden"></div>
+                    <!-- Not found container -->
+                    <div id="not-found" class="center-screen hidden">
+                        <div class="not-found-icon">⚠️</div>
+                        <div class="not-found-text">Product Not Found</div>
+                        <div id="not-found-barcode" class="not-found-barcode"></div>
+                    </div>
+                </div>
+                <script src="/el_barcode_price_display/static/src/js/app.js"></script>
+            </body>
+        </html>
+    </template>
+</odoo>
