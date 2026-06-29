@@ -45,6 +45,9 @@ class SaleOrder(models.Model):
         if tracked_fields & set(vals.keys()):
             for order in self:
                 order._sync_delivery_fields_to_partner()
+                # مزامنة اسم الطيار مع شاشة الدليفري المرتبطة (sale.order -> stock.picking)
+                if 'x_driver_name' in vals and not self.env.context.get('syncing_driver_name'):
+                    order._sync_driver_name_to_pickings()
         return res
 
     def _sync_delivery_fields_to_partner(self):
@@ -98,3 +101,26 @@ class SaleOrder(models.Model):
             message_type='notification',
             subtype_xmlid='mail.mt_note',
         )
+
+    # ----------------------------------------------------------
+    # Direction 3: Sale Order -> Delivery (stock.picking)
+    # ----------------------------------------------------------
+    def _sync_driver_name_to_pickings(self):
+        """
+        زيّن اسم الطيار من أمر البيع لجميع أوامر التسليم (Delivery)
+        المرتبطة بيه. بيشتغل لما المستخدم يعدل اسم الطيار في أمر البيع
+        بعد ما يتأكد الأوردر ويتم إنشاء الدليفري.
+        """
+        self.ensure_one()
+        # نوقف اللوب علشان ما يرجعش يحاول يحدّث الأوردر من الدليفري تاني
+        if self.env.context.get('syncing_driver_name'):
+            return
+        # picking_ids متاحة لما الموديول stock يكون منصب (وهو منصب لأن أضفناه في depends)
+        pickings = self.picking_ids.filtered(
+            lambda p: p.x_driver_name != self.x_driver_name
+        )
+        if not pickings:
+            return
+        pickings.with_context(syncing_driver_name=True).sudo().write({
+            'x_driver_name': self.x_driver_name,
+        })

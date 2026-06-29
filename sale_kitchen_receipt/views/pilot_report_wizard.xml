@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- فورم الويزارد -->
+    <record id="pilot_report_wizard_form" model="ir.ui.view">
+        <field name="name">pilot.report.wizard.form</field>
+        <field name="model">pilot.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="تقرير الطيار">
+                <group>
+                    <field name="x_driver_name" placeholder="اكتب اسم الطيار..."/>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="طباعة التقرير" type="object" class="btn-primary"/>
+                    <button string="إلغاء" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- أكشن فتح الويزارد -->
+    <record id="action_pilot_report_wizard" model="ir.actions.act_window">
+        <field name="name">تقرير الطيار</field>
+        <field name="res_model">pilot.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- زر تقرير الطيار في فورم أمر البيع -->
+    <record id="sale_order_form_inherit_pilot_btn" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.pilot.button</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='%(sale_kitchen_receipt.action_kitchen_receipt_report)d']" position="after">
+                <button name="%(sale_kitchen_receipt.action_pilot_report_wizard)d"
+                        type="action"
+                        string="تقرير الطيار"
+                        class="btn-secondary"
+                        icon="fa-truck"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- زر تقرير الطيار في لست أوامر البيع -->
+    <record id="sale_order_list_inherit_pilot_btn" model="ir.ui.view">
+        <field name="name">sale.order.list.inherit.pilot.button</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="after">
+                <field name="x_driver_name" string="الطيار" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- قائمة فرعية تحت المبيعات -->
+    <menuitem id="menu_pilot_report"
+              name="تقرير الطيار"
+              parent="sale.menu_sale_report"
+              action="action_pilot_report_wizard"
+              sequence="50"/>
+
+</odoo>

@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- فورمات الورق A4 -->
+    <record id="paperformat_pilot_report" model="report.paperformat">
+        <field name="name">Pilot Report A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_spacing">5</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!-- أكشن التقرير -->
+    <record id="action_pilot_report" model="ir.actions.report">
+        <field name="name">تقرير الطيار</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sale_kitchen_receipt.pilot_report_template</field>
+        <field name="report_file">sale_kitchen_receipt.pilot_report_template</field>
+        <field name="paperformat_id" ref="sale_kitchen_receipt.paperformat_pilot_report"/>
+    </record>
+
+    <!-- قالب التقرير -->
+    <template id="pilot_report_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc" t-index="i">
+
+                <!-- صفحة أولى أو صفحة جديدة لكل أوردر -->
+                <t t-if="i == 0">
+                    <div class="page" style="direction: rtl; font-family: 'Arial', sans-serif; font-size: 12px; color: #000;">
+
+                        <!-- رأس التقرير -->
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <h2 style="margin: 0; font-size: 20px; color: #1a1a1a;">تقرير أوامر البيع حسب الطيار</h2>
+                            <div style="font-size: 14px; margin-top: 5px; color: #333;">
+                                اسم الطيار: <b t-esc="doc.x_driver_name or '-'"/>
+                            </div>
+                            <div style="font-size: 11px; margin-top: 3px; color: #666;">
+                                عدد الأوامر: <t t-esc="len(docs)"/>
+                                &#160;|&#160;
+                                تاريخ الطباعة: <span t-esc="time.strftime('%d/%m/%Y %H:%M')"/>
+                            </div>
+                        </div>
+
+                        <!-- ملخص إجمالي -->
+                        <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px; margin-bottom: 15px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 8px; width: 50%;">إجمالي قيمة الطلبات:</td>
+                                    <td style="text-align: left; padding: 3px 8px; font-weight: bold; direction: ltr;">
+                                        <t t-esc="'%.2f' % sum(docs.mapped('amount_untaxed'))"/> ج.م
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 3px 8px;">الإجمالي الكلي:</td>
+                                    <td style="text-align: left; padding: 3px 8px; font-weight: bold; color: #d9534f; font-size: 15px; direction: ltr;">
+                                        <t t-esc="'%.2f' % sum(docs.mapped('amount_total'))"/> ج.م
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- تكرار كل أوردر -->
+                        <t t-foreach="docs" t-as="order">
+                            <div t-attf-style="border: 1px solid #ccc; border-radius: 4px; margin-bottom: 12px; {{ 'page-break-inside: avoid;' if order != docs[-1] else '' }}">
+
+                                <!-- رأس الأوردر -->
+                                <div style="background-color: #333; color: #fff; padding: 8px 12px; font-size: 13px; border-radius: 4px 4px 0 0;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="text-align: right; width: 50%;">
+                                                <b t-esc="order.name"/>
+                                            </td>
+                                            <td style="text-align: left; width: 50%; direction: ltr; font-size: 11px;">
+                                                <span t-esc="order.date_order.strftime('%d/%m/%Y %I:%M %p')"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- بيانات العميل -->
+                                <div style="padding: 8px 12px; background-color: #fafafa; border-bottom: 1px solid #eee; font-size: 11px;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tr>
+                                            <td style="text-align: right; width: 20%; padding: 2px 0;">العميل:</td>
+                                            <td style="text-align: right; width: 30%; padding: 2px 0; font-weight: bold;">
+                                                <span t-esc="order.partner_id.name"/>
+                                            </td>
+                                            <td style="text-align: right; width: 15%; padding: 2px 0;">التليفون:</td>
+                                            <td style="text-align: left; width: 35%; padding: 2px 0;">
+                                                <span t-esc="order.partner_id.phone or order.partner_id.mobile or '-'"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right; padding: 2px 0;">العنوان:</td>
+                                            <td style="text-align: right; padding: 2px 0;" colspan="3">
+                                                <span t-esc="order.partner_id.city or ''"/> -
+                                                <span t-esc="order.partner_id.street or ''"/>
+                                                <t t-if="order.x_building_floor">
+                                                    - <span t-esc="order.x_building_floor"/>
+                                                </t>
+                                                <t t-if="order.x_landmark">
+                                                    - <span t-esc="order.x_landmark"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- جدول الأصناف -->
+                                <div style="padding: 0 12px 8px 12px;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px;">
+                                        <thead>
+                                            <tr style="background-color: #e9ecef; border-bottom: 2px solid #333;">
+                                                <th style="text-align: right; padding: 5px 4px; width: 50%;">الصنف</th>
+                                                <th style="text-align: center; padding: 5px 4px; width: 15%;">الكمية</th>
+                                                <th style="text-align: left; padding: 5px 4px; width: 35%;">السعر الكلي</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="order.order_line" t-as="line">
+                                                <tr style="border-bottom: 1px dashed #ddd;">
+                                                    <td style="text-align: right; padding: 4px;">
+                                                        <span t-esc="line.product_id.name or line.name"/>
+                                                    </td>
+                                                    <td style="text-align: center; padding: 4px; font-weight: bold;">
+                                                        <span t-esc="'%.0f' % line.product_uom_qty"/>
+                                                    </td>
+                                                    <td style="text-align: left; padding: 4px; direction: ltr;">
+                                                        <span t-esc="'%.2f' % line.price_subtotal"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr style="border-top: 2px solid #333;">
+                                                <td style="text-align: right; padding: 5px 4px; font-weight: bold;">الإجمالي</td>
+                                                <td style="text-align: center; padding: 5px 4px;"></td>
+                                                <td style="text-align: left; padding: 5px 4px; font-weight: bold; direction: ltr;">
+                                                    <span t-esc="'%.2f' % order.amount_total"/> ج.م
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </t>
+
+                        <!-- تذييل التقرير -->
+                        <div style="text-align: center; font-size: 10px; color: #999; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;">
+                            تم إنشاء هذا التقرير تلقائياً من النظام
+                        </div>
+
+                    </div>
+                </t>
+
+            </t>
+        </t>
+    </template>
+
+</odoo>
