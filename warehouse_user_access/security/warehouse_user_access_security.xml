@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
+    <!--
+        Record rules لتقييد وصول المستخدمين لـ stock.quant حسب مستودعاتهم.
+        تم استخدام location_id مع child_of view_location_id لأن stock.quant
+        مش عنده حقل warehouse_id مباشر - بيتم ربطه بالمستودع من خلال location_id.
+    -->
+    <data noupdate="1">
+
+        <!-- تقييد stock.quant لمستودعات المستخدم (للمستخدمين العاديين) -->
+        <record id="warehouse_user_quant_rule" model="ir.rule">
+            <field name="name">Stock Quant: User Warehouse Access</field>
+            <field name="model_id" ref="stock.model_stock_quant"/>
+            <field name="domain_force">
+                [('location_id', 'child_of', [wh.view_location_id.id for wh in user.warehouse_ids])] if user.warehouse_ids else [(0, '=', 1)]
+            </field>
+            <field name="groups" eval="[(4, ref('stock.group_stock_user'))]"/>
+        </record>
+
+        <!-- السماح للمشرفين (Admin) برؤية كل الـ quants -->
+        <record id="warehouse_admin_quant_rule" model="ir.rule">
+            <field name="name">Stock Quant: Admin Access</field>
+            <field name="model_id" ref="stock.model_stock_quant"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_system'))]"/>
+        </record>
+
     </data>
 </odoo>
