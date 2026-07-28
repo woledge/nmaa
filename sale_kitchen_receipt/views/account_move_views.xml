@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- إضافة حقل اسم الطيار في شاشة الفاتورة -->
+    <record id="account_move_form_inherit_kitchen" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.kitchen.receipt</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_driver_name" string="اسم الطيار"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- إضافة بحث باسم الطيار في فواتير العملاء -->
+    <record id="account_move_search_inherit_kitchen" model="ir.ui.view">
+        <field name="name">account.move.search.inherit.kitchen.receipt</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_driver_name" string="اسم الطيار"/>
+            </xpath>
+
+            <xpath expr="//filter[@name='status']" position="after">
+                <separator/>
+                <filter string="اسم الطيار" name="group_by_driver" context="{'group_by': 'x_driver_name'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- إضافة عمود اسم الطيار في لست الفواتير (Tree View) -->
+    <record id="account_move_tree_inherit_kitchen" model="ir.ui.view">
+        <field name="name">account.move.tree.inherit.kitchen.receipt</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="x_driver_name" string="اسم الطيار" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

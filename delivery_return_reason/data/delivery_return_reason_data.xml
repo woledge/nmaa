@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="reason_client_refused" model="delivery.return.reason">
+            <field name="name">العميل رفض الاستلام</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="reason_client_unavailable" model="delivery.return.reason">
+            <field name="name">العميل غير متواجد</field>
+            <field name="sequence">2</field>
+        </record>
+
+        <record id="reason_wrong_address" model="delivery.return.reason">
+            <field name="name">خطأ في العنوان</field>
+            <field name="sequence">3</field>
+        </record>
+
+        <record id="reason_late_delivery" model="delivery.return.reason">
+            <field name="name">تأخير في التوصيل</field>
+            <field name="sequence">4</field>
+        </record>
+
+        <record id="reason_damaged_product" model="delivery.return.reason">
+            <field name="name">منتج تالف</field>
+            <field name="sequence">5</field>
+        </record>
+
+        <record id="reason_missing_product" model="delivery.return.reason">
+            <field name="name">منتج ناقص</field>
+            <field name="sequence">6</field>
+        </record>
+
+        <record id="reason_wrong_order" model="delivery.return.reason">
+            <field name="name">طلب خطأ</field>
+            <field name="sequence">7</field>
+        </record>
+
+        <record id="reason_duplicate_order" model="delivery.return.reason">
+            <field name="name">طلب مكرر / إلغاء</field>
+            <field name="sequence">8</field>
+        </record>
+
+        <record id="reason_client_phone_off" model="delivery.return.reason">
+            <field name="name">لا يرد على التليفون</field>
+            <field name="sequence">9</field>
+        </record>
+
+        <record id="reason_other" model="delivery.return.reason">
+            <field name="name">أخرى</field>
+            <field name="sequence">99</field>
+        </record>
+
+    </data>
+</odoo>

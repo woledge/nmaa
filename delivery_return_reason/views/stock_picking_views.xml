@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_picking_form_inherit_return" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.return.reason</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//notebook" position="inside">
+                <page string="بيانات الرجوع" invisible="picking_type_code != 'outgoing'">
+                    <group>
+                        <group>
+                            <field name="x_returned"/>
+                            <field name="x_return_reason_id"
+                                   invisible="not x_returned"
+                                   required="x_returned"/>
+                        </group>
+                        <group>
+                            <field name="x_return_note"
+                                   invisible="not x_returned"
+                                   placeholder="أضف أي تفاصيل إضافية عن سبب الرجوع..."/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

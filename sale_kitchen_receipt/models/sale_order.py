@@ -103,7 +103,18 @@ class SaleOrder(models.Model):
         )
 
     # ----------------------------------------------------------
-    # Direction 3: Sale Order -> Delivery (stock.picking)
+    # Direction 3: Sale Order -> Invoice (account.move)
+    # ----------------------------------------------------------
+    def _prepare_invoice(self):
+        """
+        تمرير اسم الطيار من أمر البيع للفاتورة عند إنشائها.
+        """
+        invoice_vals = super()._prepare_invoice()
+        invoice_vals['x_driver_name'] = self.x_driver_name or False
+        return invoice_vals
+
+    # ----------------------------------------------------------
+    # Direction 4: Sale Order -> Delivery (stock.picking)
     # ----------------------------------------------------------
     def _sync_driver_name_to_pickings(self):
         """

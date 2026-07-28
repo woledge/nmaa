@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_picking_search_inherit_return" model="ir.ui.view">
+        <field name="name">stock.picking.search.inherit.return.reason</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_driver_name" string="اسم الطيار"/>
+                <field name="x_return_reason_id" string="سبب الرجوع"/>
+            </xpath>
+
+            <xpath expr="//filter[@name='late']" position="after">
+                <separator/>
+                <filter string="مرتجع" name="filter_returned" domain="[('x_returned', '=', True)]"/>
+                <filter string="غير مرتجع" name="filter_not_returned" domain="[('x_returned', '=', False)]"/>
+                <separator/>
+                <filter string="حالة الرجوع" name="group_returned" context="{'group_by': 'x_returned'}"/>
+                <filter string="سبب الرجوع" name="group_return_reason" context="{'group_by': 'x_return_reason_id'}"/>
+                <filter string="اسم الطيار" name="group_driver" context="{'group_by': 'x_driver_name'}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

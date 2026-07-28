@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_stock_picking_return_pivot" model="ir.ui.view">
+        <field name="name">stock.picking.return.pivot</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <pivot string="تحليل أسباب الرجوع">
+                <field name="x_return_reason_id" type="row"/>
+                <field name="x_driver_name" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_stock_picking_return_graph" model="ir.ui.view">
+        <field name="name">stock.picking.return.graph</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <graph string="تحليل أسباب الرجوع" type="bar">
+                <field name="x_return_reason_id" type="row"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_delivery_return_analysis" model="ir.actions.act_window">
+        <field name="name">تحليل المرتجعات</field>
+        <field name="res_model">stock.picking</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('x_returned', '=', True), ('picking_type_code', '=', 'outgoing')]</field>
+        <field name="view_id" ref="view_stock_picking_return_pivot"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                لا توجد عمليات رجوع مسجلة بعد
+            </p>
+            <p>
+                قم بتسجيل أسباب رجوع الطلبات من شاشة التسليم لعرض التحليلات والإحصائيات هنا
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_delivery_return_analysis" name="تحليل المرتجعات" parent="menu_delivery_return_root" action="action_delivery_return_analysis" sequence="20"/>
+
+</odoo>

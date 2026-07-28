@@ -19,6 +19,7 @@
         "views/sale_order_search.xml",          # فلتر البحث باسم الطيار
         "views/pilot_report_wizard.xml",        # ويزارد تقرير الطيار
         "views/stock_picking_views.xml",        # شاشة الدليفري: عرض + تعديل اسم الطيار
+        "views/account_move_views.xml",       # شاشة الفاتورة: عرض + بحث اسم الطيار
     ],
     "installable": True,
     "application": False,
