@@ -39,7 +39,7 @@
                         <t t-if="doc.partner_id.street or doc.partner_id.city"><tr><td style="text-align: right; padding: 1px 0;">العنوان:</td><td style="text-align: left; padding: 1px 0;"><span t-out="doc.partner_id.city or ''"/> - <span t-out="doc.partner_id.street or ''"/></td></tr></t>
                         <tr><td style="text-align: right; padding: 1px 0;">العمارة/الدور:</td><td style="text-align: left; padding: 1px 0;"><span t-out="doc.x_building_floor or '-'"/></td></tr>
                         <tr><td style="text-align: right; padding: 1px 0;">علامة مميزة:</td><td style="text-align: left; padding: 1px 0;"><span t-out="doc.x_landmark or '-'"/></td></tr>
-                        <tr><td style="text-align: right; padding: 1px 0; font-weight: bold;">اسم الطيار:</td><td style="text-align: left; padding: 1px 0; font-weight: bold;"><span t-out="doc.x_driver_name or '-'"/></td></tr>
+                        <tr><td style="text-align: right; padding: 1px 0; font-weight: bold;">اسم الطيار:</td><td style="text-align: left; padding: 1px 0; font-weight: bold;"><span t-out="doc.x_driver_name.name or '-'"/></td></tr>
                     </table>
                     <div style="background-color: #000; color: #fff; text-align: center; padding: 2px 0; font-size: 11px; font-weight: bold; margin: 4px 0;">إذن تشغيل المطبخ</div>
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 11px;">
@@ -52,7 +52,7 @@
                     </table>
                     <div style="border-top: 1px solid #000; padding-top: 3px; font-size: 11px;">
                         <div style="display: block; overflow: hidden; margin-bottom: 2px;"><span style="float: right;">قيمة الطلبات:</span><span style="float: left; direction: ltr;"><span t-out="'%.4f' % doc.amount_untaxed"/></span></div>
-                        <div style="display: block; overflow: hidden; margin-bottom: 2px;"><span style="float: right;">الخصم:</span><span style="float: left; direction: ltr;">0.0000</span></div>
+                        <div style="display: block; overflow: hidden; margin-bottom: 2px;"><span style="float: right;">الخصم:</span><span style="float: left; direction: ltr;"><span t-out="'%.4f' % sum([line.price_unit * line.product_uom_qty * line.discount / 100 for line in doc.order_line])"/></span></div>
                         <div style="display: block; overflow: hidden; background-color: #000; color: #fff; padding: 3px 5px; font-size: 12px; font-weight: bold; margin-top: 3px;"><span style="float: right;">الإجمالي:</span><span style="float: left; direction: ltr;"><span t-out="'%.4f' % doc.amount_total"/> ج.م</span></div>
                     </div>
                     <div style="text-align: center; font-size: 11px; padding: 4px 0; font-weight: bold; letter-spacing: 1px;">ID: <span t-out="'%08d' % doc.id"/></div>

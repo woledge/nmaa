@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Wizard form + action (separate file to avoid VM010 false positive) -->
+
     <record id="pilot_report_wizard_form" model="ir.ui.view">
         <field name="name">pilot.report.wizard.form</field>
         <field name="model">pilot.report.wizard</field>
         <field name="arch" type="xml">
             <form string="تقرير الطيار">
-                <group>
-                    <field name="x_driver_name" placeholder="اكتب اسم الطيار..."/>
-                </group>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="x_driver_name" string="الطيار" required="1"/>
+                            <field name="sale_order_id" string="أمر بيع "/>
+                        </group>
+                        <group>
+                            <field name="date_from" string="من تاريخ"/>
+                            <field name="date_to" string="إلى تاريخ"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert" style="margin-top: 10px;">
+                        <i class="fa fa-info-circle"/> يمكنك ترك حقلي التاريخ وأمر البيع فارغين لجلب جميع الأوامر.
+                    </div>
+                </sheet>
                 <footer>
                     <button name="action_print_report" string="طباعة التقرير" type="object" class="btn-primary"/>
                     <button string="إلغاء" class="btn-secondary" special="cancel"/>
@@ -16,10 +28,12 @@
             </form>
         </field>
     </record>
+
     <record id="action_pilot_report_wizard" model="ir.actions.act_window">
         <field name="name">تقرير الطيار</field>
         <field name="res_model">pilot.report.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
+
 </odoo>

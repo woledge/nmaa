@@ -1,12 +1,15 @@
+# -*- coding: utf-8 -*-
 from odoo import api, fields, models
 
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
-    x_driver_name = fields.Char(
-        string="اسم الطيار",
-        help="اسم الطيار المسؤول عن التوصيل. بيتم مزامنته تلقائياً مع أمر البيع المرتبط.",
+    x_driver_name = fields.Many2one(
+        'x.pilot',
+        string='اسم الطيار',
+        ondelete='restrict',
+        help='اسم الطيار المسؤول عن التوصيل. بيتم مزامنته تلقائياً مع أمر البيع المرتبط.',
     )
 
     @api.model_create_multi
@@ -19,7 +22,7 @@ class StockPicking(models.Model):
                 ], limit=1)
                 if sale and sale.x_driver_name:
                     picking.with_context(syncing_driver_name=True).sudo().write({
-                        'x_driver_name': sale.x_driver_name,
+                        'x_driver_name': sale.x_driver_name.id,
                     })
         return pickings
 
@@ -33,6 +36,6 @@ class StockPicking(models.Model):
                     ], limit=1)
                     if sale and sale.x_driver_name != picking.x_driver_name:
                         sale.with_context(syncing_driver_name=True).sudo().write({
-                            'x_driver_name': picking.x_driver_name,
+                            'x_driver_name': picking.x_driver_name.id,
                         })
         return res

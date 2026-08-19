@@ -10,13 +10,17 @@ class TestKitchenReceipt(TransactionCase):
         cls.Partner = cls.env['res.partner']
         cls.SaleOrder = cls.env['sale.order']
         cls.Wizard = cls.env['pilot.report.wizard']
+        cls.Pilot = cls.env['x.pilot']
+
+        cls.pilot = cls.Pilot.create({'name': 'أحمد محمد'})
+        cls.pilot2 = cls.Pilot.create({'name': 'سعيد علي'})
 
         cls.partner = cls.Partner.create({
             'name': 'Test Customer',
             'phone': '01001234567',
             'x_building_floor': 'عمارة 5 - الدور 3',
             'x_landmark': 'بجوار الصيدلية',
-            'x_driver_name': 'أحمد محمد',
+            'x_driver_name': cls.pilot.id,
         })
 
     def test_01_partner_delivery_fields_exist(self):
@@ -33,7 +37,7 @@ class TestKitchenReceipt(TransactionCase):
         order = self.SaleOrder.new({'partner_id': self.partner.id})
         order._onchange_partner_id_kitchen_fields()
         self.assertEqual(order.x_building_floor, 'عمارة 5 - الدور 3')
-        self.assertEqual(order.x_driver_name, 'أحمد محمد')
+        self.assertEqual(order.x_driver_name, self.pilot)
 
     def test_04_sync_delivery_to_partner(self):
         """Editing delivery info on order syncs back to partner."""
@@ -47,19 +51,19 @@ class TestKitchenReceipt(TransactionCase):
         """Driver name passes from sale order to invoice."""
         order = self.SaleOrder.create({
             'partner_id': self.partner.id,
-            'x_driver_name': 'سعيد علي',
+            'x_driver_name': self.pilot2.id,
         })
         invoice_vals = order._prepare_invoice()
-        self.assertEqual(invoice_vals.get('x_driver_name'), 'سعيد علي')
+        self.assertEqual(invoice_vals.get('x_driver_name'), self.pilot2.id)
 
     def test_06_wizard_print_report(self):
         """Wizard finds orders by driver name."""
         self.SaleOrder.create({
             'partner_id': self.partner.id,
-            'x_driver_name': 'أحمد محمد',
+            'x_driver_name': self.pilot.id,
         })
-        wizard = self.Wizard.create({'x_driver_name': 'أحمد محمد'})
-        orders = self.SaleOrder.search([('x_driver_name', 'ilike', 'أحمد محمد')])
+        wizard = self.Wizard.create({'x_driver_name': self.pilot.id})
+        orders = self.SaleOrder.search([('x_driver_name', '=', self.pilot.id)])
         self.assertTrue(orders)
 
     def test_07_stock_picking_driver_field(self):

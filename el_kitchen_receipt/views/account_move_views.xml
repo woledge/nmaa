@@ -8,14 +8,6 @@
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="x_driver_name" string="اسم الطيار"/>
             </xpath>
-            <xpath expr="//field[@name='invoice_line_ids']" position="after">
-                <button name="%(el_kitchen_receipt.action_kitchen_receipt_report)d"
-                        type="action"
-                        string="طباعة اذن المطبخ"
-                        class="btn-primary"
-                        icon="fa-print"
-                        context="{'active_id': id}"/>
-            </xpath>
         </field>
     </record>
     <record id="account_move_search_inherit_kitchen" model="ir.ui.view">

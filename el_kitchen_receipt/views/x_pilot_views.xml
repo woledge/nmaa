@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="x_pilot_list_view" model="ir.ui.view">
+        <field name="name">x.pilot.list.view</field>
+        <field name="model">x.pilot</field>
+        <field name="arch" type="xml">
+            <list string="الطيارين">
+                <field name="name" string="اسم الطيار"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="x_pilot_form_view" model="ir.ui.view">
+        <field name="name">x.pilot.form.view</field>
+        <field name="model">x.pilot</field>
+        <field name="arch" type="xml">
+            <form string="الطيار">
+                <group>
+                    <field name="name" string="اسم الطيار" placeholder="أدخل اسم الطيار..."/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="x_pilot_search_view" model="ir.ui.view">
+        <field name="name">x.pilot.search.view</field>
+        <field name="model">x.pilot</field>
+        <field name="arch" type="xml">
+            <search string="بحث الطيارين">
+                <field name="name" string="اسم الطيار"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_x_pilot" model="ir.actions.act_window">
+        <field name="name">الطيارين</field>
+        <field name="res_model">x.pilot</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                لا يوجد طيارين حالياً!
+            </p>
+            <p>
+                اضغط "إنشاء" لإضافة طيار جديد.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_x_pilot"
+              name="الطيارين"
+              parent="sale.menu_sale_config"
+              action="action_x_pilot"
+              sequence="50"/>
+
+</odoo>

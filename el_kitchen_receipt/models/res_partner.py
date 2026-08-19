@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import fields, models
 
 
@@ -6,4 +7,8 @@ class ResPartner(models.Model):
 
     x_building_floor = fields.Char(string="العمارة / الدور")
     x_landmark = fields.Char(string="علامة مميزة")
-    x_driver_name = fields.Char(string="اسم الطيار")
+    x_driver_name = fields.Many2one(
+        'x.pilot',
+        string='اسم الطيار',
+        ondelete='restrict',
+    )
